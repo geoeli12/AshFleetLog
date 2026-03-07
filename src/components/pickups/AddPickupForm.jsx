@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,6 +40,21 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
 
   const [customersIL, setCustomersIL] = useState([]);
   const [customersPA, setCustomersPA] = useState([]);
+
+  /* --------------------------------------------------
+     FIX: keep form date synced with page date picker
+  -------------------------------------------------- */
+  useEffect(() => {
+    if (!defaultCalledOutDate) return;
+
+    setForm((prev) => ({
+      ...prev,
+      date_called_out: defaultCalledOutDate
+    }));
+
+  }, [defaultCalledOutDate]);
+
+  /* -------------------------------------------------- */
 
   useEffect(() => {
     let alive = true;
@@ -91,8 +105,8 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
       .toString()
       .trim()
       .toLowerCase()
-      .replace(/^\\d+\\s+/, "")
-      .replace(/^[-–—\\s]+/, "")
+      .replace(/^\d+\s+/, "")
+      .replace(/^[-–—\s]+/, "")
       .trim();
 
   const findCustomer = (companyValue) => {
@@ -394,4 +408,3 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
   );
 
 }
-
