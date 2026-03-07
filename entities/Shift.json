@@ -1,0 +1,84 @@
+
+{
+  "name": "Shift",
+  "type": "object",
+  "properties": {
+    "driver_name": {
+      "type": "string",
+      "description": "Name of the driver"
+    },
+    "shift_type": {
+      "type": "string",
+      "enum": [
+        "day",
+        "night",
+        "pto"
+      ],
+      "default": "day",
+      "description": "Day, night, or PTO shift"
+    },
+    "unit_number": {
+      "type": "string",
+      "description": "Unit/truck number being used"
+    },
+    "start_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Shift start time"
+    },
+    "end_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Shift end time"
+    },
+    "starting_odometer": {
+      "type": "number",
+      "description": "Starting odometer miles"
+    },
+    "ending_odometer": {
+      "type": "number",
+      "description": "Ending odometer miles"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed"
+      ],
+      "default": "active",
+      "description": "Shift status"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the shift"
+    },
+    "is_pto": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is a PTO entry"
+    },
+    "pto_dates": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of PTO dates (YYYY-MM-DD format)"
+    },
+    "attendance_status": {
+      "type": "string",
+      "enum": [
+        "present",
+        "late",
+        "absent",
+        "pto"
+      ],
+      "default": "present",
+      "description": "Attendance status for this shift"
+    }
+  },
+  "required": [
+    "driver_name"
+  ]
+}
+

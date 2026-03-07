@@ -1,0 +1,69 @@
+
+{
+  "name": "Run",
+  "type": "object",
+  "properties": {
+    "shift_id": {
+      "type": "string",
+      "description": "ID of the parent shift"
+    },
+    "driver_name": {
+      "type": "string",
+      "description": "Driver name for easy reference"
+    },
+    "run_type": {
+      "type": "string",
+      "enum": [
+        "delivery",
+        "pickup"
+      ],
+      "description": "Type of run - delivery or pickup"
+    },
+    "city": {
+      "type": "string",
+      "description": "City of the customer"
+    },
+    "customer_name": {
+      "type": "string",
+      "description": "Customer name"
+    },
+    "trailer_dropped": {
+      "type": "string",
+      "description": "Trailer number dropped off"
+    },
+    "trailer_picked_up": {
+      "type": "string",
+      "description": "Trailer number picked up"
+    },
+    "load_type": {
+      "type": "string",
+      "description": "Type of load (custom values allowed)"
+    },
+    "arrival_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time arrived at customer"
+    },
+    "departure_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time left customer"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the run"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the run"
+    }
+  },
+  "required": [
+    "shift_id",
+    "driver_name",
+    "city",
+    "customer_name"
+  ]
+}
+

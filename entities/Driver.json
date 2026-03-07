@@ -1,0 +1,41 @@
+
+{
+  "name": "Driver",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Driver's full name"
+    },
+    "employee_id": {
+      "type": "string",
+      "description": "Employee ID number"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Phone number"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "IL",
+        "PA"
+      ],
+      "default": "IL",
+      "description": "State where driver operates"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active",
+      "description": "Driver status"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
+

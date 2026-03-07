@@ -1,0 +1,86 @@
+{
+  "drivers": [
+    {
+      "id": "drv_7YKs5nYJp7",
+      "created_date": "2026-02-08T16:11:59.424Z",
+      "name": "Jose",
+      "phone": "1234567890",
+      "state": "PA",
+      "status": "active"
+    },
+    {
+      "id": "drv_T9Nx5L4v_Y",
+      "created_date": "2026-02-08T16:12:17.074Z",
+      "name": "Jorge",
+      "phone": "9876543210",
+      "state": "PA",
+      "status": "active"
+    }
+  ],
+  "shifts": [
+    {
+      "id": "sft_vTC3TOubyT",
+      "created_date": "2026-02-08T16:13:23.591Z",
+      "unit_number": "10071",
+      "starting_odometer": 121310,
+      "shift_type": "day",
+      "start_time": "2026-02-08T16:13:23.585Z",
+      "date": "2026-02-08",
+      "status": "completed",
+      "driver_name": "Jose",
+      "attendance_status": "late",
+      "ending_odometer": 122131,
+      "end_time": "2026-02-08T16:16:19.112Z"
+    },
+    {
+      "id": "sft_BDKQUYBudY",
+      "created_date": "2026-02-08T16:15:02.587Z",
+      "unit_number": "10071",
+      "starting_odometer": 125131,
+      "shift_type": "night",
+      "start_time": "2026-02-08T16:15:02.577Z",
+      "date": "2026-02-08",
+      "status": "completed",
+      "driver_name": "Jorge",
+      "attendance_status": "present",
+      "ending_odometer": 126131,
+      "end_time": "2026-02-08T16:16:39.309Z"
+    }
+  ],
+  "runs": [
+    {
+      "id": "run_xuEJmJJyk3",
+      "created_date": "2026-02-08T16:14:26.836Z",
+      "run_type": "delivery",
+      "city": "Kenosha",
+      "customer_name": "Uline I7",
+      "trailer_dropped": "111",
+      "trailer_picked_up": "222",
+      "load_type": "scrap",
+      "arrival_time": "2026-02-06T16:14:00.000Z",
+      "departure_time": "2026-02-06T18:16:00.000Z",
+      "notes": "",
+      "shift_id": "sft_vTC3TOubyT",
+      "driver_name": "Jose",
+      "date": "2026-02-08"
+    },
+    {
+      "id": "run_3vw2h0BF3b",
+      "created_date": "2026-02-08T16:15:50.964Z",
+      "run_type": "pickup",
+      "city": "Pottsville",
+      "customer_name": "Lowes",
+      "trailer_dropped": "333",
+      "trailer_picked_up": "444",
+      "load_type": "scrap",
+      "arrival_time": "2026-02-06T20:15:00.000Z",
+      "departure_time": "2026-02-06T22:15:00.000Z",
+      "notes": "",
+      "shift_id": "sft_BDKQUYBudY",
+      "driver_name": "Jorge",
+      "date": "2026-02-08"
+    }
+  ],
+  "schedules": [],
+  "customLoadTypes": []
+}

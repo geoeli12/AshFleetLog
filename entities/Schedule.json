@@ -1,0 +1,56 @@
+
+{
+  "name": "Schedule",
+  "type": "object",
+  "properties": {
+    "driver_name": {
+      "type": "string",
+      "description": "Name of the driver"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of scheduled shift"
+    },
+    "shift_type": {
+      "type": "string",
+      "enum": [
+        "day",
+        "night",
+        "dayPA",
+        "nightPA"
+      ],
+      "description": "Type of shift"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "IL",
+        "PA"
+      ],
+      "description": "State where driver operates"
+    },
+    "unit_number": {
+      "type": "string",
+      "description": "Assigned unit/truck number"
+    },
+    "planned_city": {
+      "type": "string",
+      "description": "Planned city for runs"
+    },
+    "planned_customer": {
+      "type": "string",
+      "description": "Planned customer for runs"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    }
+  },
+  "required": [
+    "driver_name",
+    "date",
+    "shift_type"
+  ]
+}
+
