@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState } from "react";
 import { Pencil, Trash2, Check, X, Copy, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -47,9 +48,7 @@ function saveTypeOptions(opts) {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem("pickup_types", JSON.stringify(opts));
-  } catch {
-    // ignore
-  }
+  } catch {}
 }
 
 export default function PickupTable({ viewDate, logs, onUpdate, onDelete, onCopy, onMoveRow }) {
@@ -108,17 +107,18 @@ export default function PickupTable({ viewDate, logs, onUpdate, onDelete, onCopy
     handleChange("shift_code", value);
   };
 
+  // Updated column widths so table fits page without horizontal scroll
   const columns = useMemo(
     () => [
-      { key: "drag", label: "", width: "w-12 shrink-0" },
-      { key: "company", label: "Company", width: "w-[18%] min-w-[220px]" },
-      { key: "dk_trl", label: "Dk/TRL#", width: "w-[12%] min-w-[140px]" },
-      { key: "location", label: "Location", width: "w-[26%] min-w-[260px]" },
-      { key: "eta", label: "ETA", width: "w-[10%] min-w-[120px]" },
-      { key: "days_open", label: "Days old", width: "w-24 shrink-0 text-center" },
-      { key: "shift_code", label: "Type", width: "w-24 shrink-0 text-center" },
-      { key: "driver", label: "Driver", width: "w-[12%] min-w-[150px]" },
-      { key: "notes", label: "Notes", width: "w-[16%] min-w-[180px]" },
+      { key: "drag", label: "", width: "w-[4%]" },
+      { key: "company", label: "Company", width: "w-[18%]" },
+      { key: "dk_trl", label: "DK/TRL#", width: "w-[12%]" },
+      { key: "location", label: "Location", width: "w-[24%]" },
+      { key: "eta", label: "ETA", width: "w-[8%]" },
+      { key: "days_open", label: "Days Old", width: "w-[8%] text-center" },
+      { key: "shift_code", label: "Type", width: "w-[6%] text-center" },
+      { key: "driver", label: "Driver", width: "w-[10%]" },
+      { key: "notes", label: "Notes", width: "w-[10%]" },
     ],
     []
   );
@@ -140,177 +140,102 @@ export default function PickupTable({ viewDate, logs, onUpdate, onDelete, onCopy
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-      <div className="w-full overflow-x-auto">
-        <div className="w-full min-w-[1360px]">
-          <div className="bg-slate-800 text-white">
-            <div className="flex items-center px-4 py-3 gap-3">
-              {columns.map((col) => (
-                <div
-                  key={col.key}
-                  className={cn(
-                    "text-xs font-semibold uppercase tracking-wider whitespace-nowrap overflow-hidden text-ellipsis truncate",
-                    col.width
-                  )}
-                >
-                  {col.label}
-                </div>
-              ))}
-              <div className="w-36 shrink-0 pr-2 text-xs font-semibold uppercase tracking-wider text-center">
-                Actions
-              </div>
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden w-full">
+
+      {/* Header */}
+      <div className="bg-slate-800 text-white">
+        <div className="flex items-center px-4 py-3 gap-2 w-full">
+          {columns.map((col) => (
+            <div
+              key={col.key}
+              className={cn(
+                "text-xs font-semibold uppercase tracking-wider truncate",
+                col.width
+              )}
+            >
+              {col.label}
             </div>
-          </div>
-
-          <div className="divide-y divide-slate-100">
-            {logs.length === 0 ? (
-              <div className="px-4 py-12 text-center text-slate-400">No pick ups yet. Add your first entry above.</div>
-            ) : (
-              logs.map((log) => {
-                const isEditing = editingId === log.id;
-                const viewDateYmd = normalizeYMD(viewDate || "");
-                const pickedYmd = normalizeYMD(log.date_picked_up);
-                const endForDays = pickedYmd && viewDateYmd && viewDateYmd >= pickedYmd ? pickedYmd : viewDateYmd;
-                const days = daysBetween(log.date_called_out, endForDays);
-
-                return (
-                  <div
-                    key={log.id}
-                    draggable={!isEditing}
-                    onDragStart={(e) => {
-                      if (isEditing) return;
-                      setDraggedId(log.id);
-                      e.dataTransfer.effectAllowed = "move";
-                      e.dataTransfer.setData("text/plain", String(log.id));
-                    }}
-                    onDragOver={(e) => {
-                      if (!draggedId || String(draggedId) === String(log.id)) return;
-                      e.preventDefault();
-                      e.dataTransfer.dropEffect = "move";
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      const activeId = e.dataTransfer.getData("text/plain") || draggedId;
-                      if (activeId && onMoveRow) onMoveRow(activeId, log.id);
-                      setDraggedId(null);
-                    }}
-                    onDragEnd={() => setDraggedId(null)}
-                    onClick={() => !isEditing && startEdit(log)}
-                    className={cn(
-                      "flex items-center px-4 py-3 gap-3 transition-all duration-200 hover:shadow-md cursor-pointer",
-                      getRowStyle(log, viewDateYmd),
-                      draggedId && String(draggedId) === String(log.id) && "opacity-60",
-                      isEditing && "cursor-default"
-                    )}
-                  >
-                    {columns.map((col) => {
-                      if (col.key === "drag") {
-                        return (
-                          <div key={col.key} className={cn(col.width, "flex items-center justify-center")}>
-                            <button
-                              type="button"
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                              onClick={(e) => e.stopPropagation()}
-                              title="Drag to reorder"
-                            >
-                              <GripVertical className="h-4 w-4" />
-                            </button>
-                          </div>
-                        );
-                      }
-
-                      if (col.key === "days_open") {
-                        return (
-                          <div key={col.key} className={cn(col.width, "text-center")}>
-                            <span className="text-sm font-semibold text-slate-700">{days === "" ? "-" : days}</span>
-                          </div>
-                        );
-                      }
-
-                      const value = log[col.key] ?? "";
-                      const isCarryOverView = Boolean(pickedYmd && viewDateYmd && viewDateYmd < pickedYmd);
-                      const isTypeField = col.key === "shift_code";
-
-                      return (
-                        <div key={col.key} className={cn(col.width, "overflow-hidden")}>
-                          {isEditing ? (
-                            isTypeField ? (
-                              <select
-                                value={(editData.shift_code || "").toString()}
-                                onChange={(e) => handleTypeChange(e.target.value)}
-                                className="h-8 text-sm w-full rounded-md border border-slate-200 bg-white px-2"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <option value="">(blank)</option>
-                                {typeOptions.map((t) => (
-                                  <option key={t} value={t}>
-                                    {t}
-                                  </option>
-                                ))}
-                                <option value="__ADD_NEW__">Add new…</option>
-                              </select>
-                            ) : (
-                              <Input
-                                type="text"
-                                value={editData[col.key] || ""}
-                                onChange={(e) => handleChange(col.key, e.target.value)}
-                                onClick={(e) => e.stopPropagation()}
-                                className="h-8 text-sm w-full"
-                                placeholder={col.label}
-                              />
-                            )
-                          ) : (
-                            (() => {
-                              let displayValue = value;
-                              if (isCarryOverView && col.key === "driver") displayValue = "";
-
-                              return (
-                                <span
-                                  className="text-sm text-slate-700 block truncate whitespace-nowrap overflow-hidden"
-                                  title={displayValue || ""}
-                                >
-                                  {displayValue ? displayValue : "-"}
-                                </span>
-                              );
-                            })()
-                          )}
-                        </div>
-                      );
-                    })}
-
-                    <div
-                      className="w-36 shrink-0 pr-2 flex items-center justify-center gap-1"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {isEditing ? (
-                        <>
-                          <Button size="icon" variant="ghost" onClick={saveEdit} className="h-8 w-8 shrink-0">
-                            <Check className="h-4 w-4 text-emerald-600" />
-                          </Button>
-                          <Button size="icon" variant="ghost" onClick={cancelEdit} className="h-8 w-8 shrink-0">
-                            <X className="h-4 w-4 text-slate-500" />
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <Button size="icon" variant="ghost" onClick={() => startEdit(log)} className="h-8 w-8 shrink-0" title="Edit">
-                            <Pencil className="h-4 w-4 text-slate-500" />
-                          </Button>
-                          <Button size="icon" variant="ghost" onClick={() => onCopy?.(log)} className="h-8 w-8 shrink-0" title="Copy">
-                            <Copy className="h-4 w-4 text-sky-600" />
-                          </Button>
-                          <Button size="icon" variant="ghost" onClick={() => onDelete(log.id)} className="h-8 w-8 shrink-0" title="Delete">
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                );
-              })
-            )}
+          ))}
+          <div className="w-[10%] text-xs font-semibold uppercase text-center">
+            Actions
           </div>
         </div>
+      </div>
+
+      {/* Rows */}
+      <div className="divide-y divide-slate-100">
+        {logs.length === 0 ? (
+          <div className="px-4 py-12 text-center text-slate-400">
+            No pick ups yet. Add your first entry above.
+          </div>
+        ) : (
+          logs.map((log) => {
+            const isEditing = editingId === log.id;
+            const viewDateYmd = normalizeYMD(viewDate || "");
+            const pickedYmd = normalizeYMD(log.date_picked_up);
+            const endForDays =
+              pickedYmd && viewDateYmd && viewDateYmd >= pickedYmd ? pickedYmd : viewDateYmd;
+            const days = daysBetween(log.date_called_out, endForDays);
+
+            return (
+              <div
+                key={log.id}
+                draggable={!isEditing}
+                onDragStart={(e) => {
+                  if (isEditing) return;
+                  setDraggedId(log.id);
+                  e.dataTransfer.effectAllowed = "move";
+                  e.dataTransfer.setData("text/plain", String(log.id));
+                }}
+                onDragEnd={() => setDraggedId(null)}
+                onClick={() => !isEditing && startEdit(log)}
+                className={cn(
+                  "flex items-center px-4 py-3 gap-2 hover:shadow-sm cursor-pointer",
+                  getRowStyle(log, viewDateYmd)
+                )}
+              >
+                {columns.map((col) => {
+
+                  if (col.key === "drag") {
+                    return (
+                      <div key={col.key} className={col.width}>
+                        <GripVertical className="h-4 w-4 text-slate-400" />
+                      </div>
+                    );
+                  }
+
+                  if (col.key === "days_open") {
+                    return (
+                      <div key={col.key} className={col.width}>
+                        {days === "" ? "-" : days}
+                      </div>
+                    );
+                  }
+
+                  const value = log[col.key] ?? "";
+
+                  return (
+                    <div key={col.key} className={cn(col.width, "truncate")}>
+                      {value ? value : "-"}
+                    </div>
+                  );
+                })}
+
+                <div className="w-[10%] flex gap-1 justify-center">
+                  <Button size="icon" variant="ghost" onClick={() => startEdit(log)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button size="icon" variant="ghost" onClick={() => onCopy?.(log)}>
+                    <Copy className="h-4 w-4 text-sky-600" />
+                  </Button>
+                  <Button size="icon" variant="ghost" onClick={() => onDelete(log.id)}>
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </Button>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );
