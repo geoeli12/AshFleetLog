@@ -7,8 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 
-import customersIL from "@/data/customers_il.json";
-import customersPA from "@/data/customers_pa.json";
 
 const DEFAULT_TYPE_OPTIONS = ["S", "LL", "BT", "DT"];
 
@@ -80,40 +78,45 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
   const [isCompanyFocused, setIsCompanyFocused] = useState(false);
   const ignoreCompanyBlurRef = useRef(false);
 
-  const customerDirectory = useMemo(() => {
-    const normalize = (v) => (v ?? "").toString().trim();
+  
+  const [customerDirectory, setCustomerDirectory] = useState([]);
 
-    const safeParse = (raw) => {
+  useEffect(() => {
+    const loadCustomers = async () => {
       try {
-        return JSON.parse(raw);
-      } catch {
-        return null;
+        const [ilRes, paRes] = await Promise.all([
+          fetch("/api/customers_il"),
+          fetch("/api/customers_pa"),
+        ]);
+
+        const ilRows = await ilRes.json();
+        const paRows = await paRes.json();
+
+        const normalize = (v) => (v ?? "").toString().trim();
+
+        const withMeta = (rows, rgn) =>
+          (rows || []).map((r, idx) => ({
+            _key: `${rgn}-${r.id ?? idx}`,
+            region: rgn,
+            customer: normalize(r.customer),
+            address: normalize(r.address ?? ""),
+            receivingHours: normalize(r.receivingHours),
+            receivingNotes: normalize(r.receivingNotes),
+            eta: normalize(r.eta),
+          }));
+
+        setCustomerDirectory([
+          ...withMeta(ilRows, "IL"),
+          ...withMeta(paRows, "PA"),
+        ]);
+      } catch (err) {
+        console.error("Failed to load customers:", err);
       }
     };
 
-    const getRows = (key, fallback) => {
-      if (typeof window === "undefined") return fallback || [];
-      const raw = window.localStorage.getItem(key);
-      const parsed = raw ? safeParse(raw) : null;
-      return Array.isArray(parsed) ? parsed : fallback || [];
-    };
-
-    const ilRows = getRows("customers_il", customersIL);
-    const paRows = getRows("customers_pa", customersPA);
-
-    const withMeta = (rows, rgn) =>
-      (rows || []).map((r, idx) => ({
-        _key: `${rgn}-${r.id ?? idx}`,
-        region: rgn,
-        customer: normalize(r.customer),
-        address: normalize(r.address ?? r.location ?? r.address1 ?? r.addr ?? r.full_address ?? r.site ?? ""),
-        receivingHours: normalize(r.receivingHours),
-        receivingNotes: normalize(r.receivingNotes),
-        eta: normalize(r.eta),
-      }));
-
-    return [...withMeta(ilRows, "IL"), ...withMeta(paRows, "PA")].filter((r) => r.customer);
+    loadCustomers();
   }, []);
+
 
   const normalizeCompanyKey = (v) =>
     (v ?? "")
