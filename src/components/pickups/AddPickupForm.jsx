@@ -109,6 +109,7 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
         address: normalize(r.address ?? r.location ?? r.address1 ?? r.addr ?? r.full_address ?? r.site ?? ""),
         receivingHours: normalize(r.receivingHours),
         receivingNotes: normalize(r.receivingNotes),
+        eta: normalize(r.eta),
       }));
 
     return [...withMeta(ilRows, "IL"), ...withMeta(paRows, "PA")].filter((r) => r.customer);
@@ -208,7 +209,7 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
       ...form,
       region: (region || form.region || "").toString().trim().toUpperCase(),
       location: (form.location || "").trim() || (picked?.address || ""),
-      eta: form.eta || picked?.receivingHours || "",
+      eta: form.eta || picked?.eta || "",
 
       // New pickup form should NOT set these.
       date_picked_up: "",
