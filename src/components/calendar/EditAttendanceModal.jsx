@@ -84,7 +84,7 @@ export default function EditAttendanceModal({ open, onOpenChange, employees = []
               <SelectTrigger>
                 <SelectValue placeholder="Select employee" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" className="z-[9999] max-h-60 overflow-y-auto">
                 {employeeOptions.map((e) => (
                   <SelectItem key={e.id} value={e.id}>
                     {e.name}
