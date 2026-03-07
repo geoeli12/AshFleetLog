@@ -1,15 +1,12 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Table } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { api } from "@/api/apiClient";
-
-const DEFAULT_TYPE_OPTIONS = ["S", "LL", "BT", "DT"];
 
 const unwrapListResult = (list) => {
   if (Array.isArray(list)) return list;
@@ -19,30 +16,6 @@ const unwrapListResult = (list) => {
   return [];
 };
 
-function loadTypeOptions() {
-  if (typeof window === "undefined") return DEFAULT_TYPE_OPTIONS;
-  try {
-    const raw = window.localStorage.getItem("pickup_types");
-    const parsed = raw ? JSON.parse(raw) : null;
-    const list = Array.isArray(parsed) ? parsed : [];
-    const cleaned = list
-      .map((x) => (x ?? "").toString().trim())
-      .filter(Boolean)
-      .slice(0, 25);
-    const merged = Array.from(new Set([...DEFAULT_TYPE_OPTIONS, ...cleaned]));
-    return merged.length ? merged : DEFAULT_TYPE_OPTIONS;
-  } catch {
-    return DEFAULT_TYPE_OPTIONS;
-  }
-}
-
-function saveTypeOptions(opts) {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem("pickup_types", JSON.stringify(opts));
-  } catch {}
-}
-
 const getInitialForm = (calledOutDate, regionValue) => ({
   region: (regionValue || "").toString().trim().toUpperCase(),
   date_called_out: calledOutDate || format(new Date(), "yyyy-MM-dd"),
@@ -50,35 +23,19 @@ const getInitialForm = (calledOutDate, regionValue) => ({
   dk_trl: "",
   location: "",
   eta: "",
-  shift_code: "",
+  type: "",
   notes: "",
   date_picked_up: "",
   driver: "",
 });
 
-const exampleRow = {
-  company: "Uline - U6",
-  dk_trl: "31489",
-  location: "1141 S. 10th St., Watertown, WI 53094",
-  shift_code: "S",
-  notes: "Out of service / Broken Axel",
-};
-
-const normalizeLines = (text) => {
-  const raw = (text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-  const parts = raw.split("\n").map((l) => (l ?? "").toString().trim());
-  let end = parts.length;
-  while (end > 0 && !parts[end - 1]) end--;
-  return parts.slice(0, end);
-};
-
 export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
+
   const [form, setForm] = useState(() =>
     getInitialForm(defaultCalledOutDate, region)
   );
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [typeOptions, setTypeOptions] = useState(() => loadTypeOptions());
 
+  const [isExpanded, setIsExpanded] = useState(false);
   const [isCompanyFocused, setIsCompanyFocused] = useState(false);
   const ignoreCompanyBlurRef = useRef(false);
 
@@ -96,18 +53,21 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
         ]);
 
         if (!alive) return;
+
         setCustomersIL(unwrapListResult(il));
         setCustomersPA(unwrapListResult(pa));
       } catch {}
     };
 
     load();
+
     return () => {
       alive = false;
     };
   }, []);
 
   const customerDirectory = useMemo(() => {
+
     const normalize = (v) => (v ?? "").toString().trim();
 
     const withMeta = (rows, rgn) =>
@@ -123,6 +83,7 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
       ...withMeta(customersIL, "IL"),
       ...withMeta(customersPA, "PA"),
     ].filter((r) => r.customer);
+
   }, [customersIL, customersPA]);
 
   const normalizeCompanyKey = (v) =>
@@ -130,11 +91,12 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
       .toString()
       .trim()
       .toLowerCase()
-      .replace(/^\d+\s+/, "")
-      .replace(/^[-–—\s]+/, "")
+      .replace(/^\\d+\\s+/, "")
+      .replace(/^[-–—\\s]+/, "")
       .trim();
 
   const findCustomer = (companyValue) => {
+
     const key = normalizeCompanyKey(companyValue);
     if (!key) return null;
 
@@ -147,10 +109,13 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
     if (!candidates.length) return null;
 
     const preferred = candidates.find((c) => c.region === regionUpper);
+
     return preferred || candidates[0];
+
   };
 
   const companyMatches = useMemo(() => {
+
     const q = (form.company || "").trim().toLowerCase();
     if (!q) return [];
 
@@ -164,19 +129,24 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
         return aPref - bPref;
       })
       .slice(0, 10);
+
   }, [form.company, customerDirectory, region]);
 
   const applyCompanyPick = (row) => {
+
     setForm((prev) => ({
       ...prev,
       company: row.customer,
       location: row.address || prev.location,
       eta: row.eta || prev.eta,
     }));
+
   };
 
   const handleSubmit = async (e) => {
+
     e.preventDefault();
+
     if (!form.company.trim()) return;
 
     const picked = findCustomer(form.company);
@@ -192,6 +162,7 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
 
     setForm(getInitialForm(form.date_called_out, region));
     setIsExpanded(false);
+
   };
 
   if (!isExpanded) {
@@ -204,14 +175,18 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
   }
 
   return (
+
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 w-full md:w-[740px]">
+
       <div className="flex items-start justify-between gap-3">
+
         <div>
           <div className="text-lg font-bold text-slate-800">New Pick Up</div>
           <div className="text-sm text-slate-500">
             Company suggestions now pull from Supabase
           </div>
         </div>
+
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="rounded-xl">
             {(region || "").toString().trim().toUpperCase() || "IL"}
@@ -224,14 +199,19 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
             Close
           </Button>
         </div>
+
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+
           <div className="md:col-span-2 relative">
+
             <label className="text-xs font-semibold text-slate-600">
               Company
             </label>
+
             <Input
               value={form.company}
               onChange={(e) =>
@@ -241,8 +221,11 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
               className="h-11 rounded-xl"
               onFocus={() => setIsCompanyFocused(true)}
               onBlur={() => {
+
                 if (ignoreCompanyBlurRef.current) return;
+
                 const picked = findCustomer(form.company);
+
                 if (picked) {
                   setForm((p) => ({
                     ...p,
@@ -250,31 +233,40 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
                     eta: p.eta || picked.eta,
                   }));
                 }
+
                 setIsCompanyFocused(false);
+
               }}
             />
 
             {isCompanyFocused && companyMatches.length > 0 && (
+
               <div
                 className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden"
                 onMouseDown={() => {
                   ignoreCompanyBlurRef.current = true;
                 }}
               >
+
                 {companyMatches.map((r) => (
                   <button
                     key={r._key}
                     type="button"
                     className="w-full text-left px-3 py-2 hover:bg-slate-50"
                     onMouseDown={(e) => {
+
                       e.preventDefault();
+
                       applyCompanyPick(r);
                       setIsCompanyFocused(false);
+
                       setTimeout(() => {
                         ignoreCompanyBlurRef.current = false;
                       }, 0);
+
                     }}
                   >
+
                     <div className="flex items-center justify-between gap-2">
                       <div className="text-sm text-slate-800 truncate">
                         {r.customer}
@@ -283,21 +275,27 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
                         {r.region}
                       </Badge>
                     </div>
+
                     {r.address && (
                       <div className="text-xs text-slate-500 truncate">
                         {r.address}
                       </div>
                     )}
+
                   </button>
                 ))}
+
               </div>
+
             )}
+
           </div>
 
           <div>
             <label className="text-xs font-semibold text-slate-600">
               Dk/TRL#
             </label>
+
             <Input
               value={form.dk_trl}
               onChange={(e) =>
@@ -309,20 +307,25 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-600">Type</label>
+            <label className="text-xs font-semibold text-slate-600">
+              Type
+            </label>
+
             <Input
-              value={form.shift_code}
+              value={form.type}
               onChange={(e) =>
-                setForm((p) => ({ ...p, shift_code: e.target.value }))
+                setForm((p) => ({ ...p, type: e.target.value }))
               }
               className="h-11 rounded-xl"
             />
           </div>
 
           <div className="md:col-span-4">
+
             <label className="text-xs font-semibold text-slate-600">
               Location
             </label>
+
             <Input
               value={form.location}
               onChange={(e) =>
@@ -330,10 +333,15 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
               }
               className="h-11 rounded-xl"
             />
+
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-600">ETA</label>
+
+            <label className="text-xs font-semibold text-slate-600">
+              ETA
+            </label>
+
             <Input
               value={form.eta}
               onChange={(e) =>
@@ -341,11 +349,17 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
               }
               className="h-11 rounded-xl"
             />
+
           </div>
+
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-slate-600">Notes</label>
+
+          <label className="text-xs font-semibold text-slate-600">
+            Notes
+          </label>
+
           <Textarea
             value={form.notes}
             onChange={(e) =>
@@ -353,9 +367,11 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
             }
             className="min-h-[90px] rounded-xl"
           />
+
         </div>
 
         <div className="flex items-center justify-end gap-2 pt-1">
+
           <Button
             type="button"
             variant="outline"
@@ -364,11 +380,18 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
           >
             Cancel
           </Button>
+
           <Button type="submit" className="rounded-xl">
             Save
           </Button>
+
         </div>
+
       </form>
+
     </div>
+
   );
+
 }
+
