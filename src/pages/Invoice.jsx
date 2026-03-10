@@ -56,8 +56,9 @@ export default function Invoice() {
   const [customerAddress1, setCustomerAddress1] = useState("");
 const [customerFocused, setCustomerFocused] = useState(false);
   const ignoreCustomerBlurRef = useRef(false);
+  const dragIndex = useRef(null);
 
-  const [rows, setRows] = useState(() => Array.from({ length: 26 }, blankRow));
+  const [rows, setRows] = useState(() => Array.from({ length: 10 }, blankRow));
 
   const printStyleId = "invoice-print-style";
 
@@ -187,8 +188,24 @@ const [customerFocused, setCustomerFocused] = useState(false);
     setRows((prev) => {
       const copy = [...prev];
       copy[idx] = { ...copy[idx], [field]: value };
+
+      if (idx === prev.length - 1 && value !== "") {
+        copy.push(blankRow());
+      }
+
       return copy;
     });
+  };
+
+  const handleEnterMove = (e, idx) => {
+    if (e.key !== "Enter") return;
+
+    e.preventDefault();
+
+    const nextRow = idx + 1;
+    const next = document.querySelector(`[data-row="${nextRow}"][data-col="${e.target.dataset.col}"]`);
+
+    if (next) next.focus();
   };
 
   const clearRow = (idx) => {
@@ -197,6 +214,40 @@ const [customerFocused, setCustomerFocused] = useState(false);
       copy[idx] = blankRow();
       return copy;
     });
+  };
+
+  const insertRow = (idx) => {
+    setRows((prev) => {
+      const copy = [...prev];
+      copy.splice(idx + 1, 0, blankRow());
+      return copy;
+    });
+  };
+
+  const duplicateRow = (idx) => {
+    setRows((prev) => {
+      const copy = [...prev];
+      copy.splice(idx + 1, 0, { ...copy[idx] });
+      return copy;
+    });
+  };
+
+  const dragStart = (idx) => {
+    dragIndex.current = idx;
+  };
+
+  const dragDrop = (idx) => {
+    const start = dragIndex.current;
+    if (start === null) return;
+
+    setRows((prev) => {
+      const copy = [...prev];
+      const row = copy.splice(start, 1)[0];
+      copy.splice(idx, 0, row);
+      return copy;
+    });
+
+    dragIndex.current = null;
   };
 
   const onPickCustomer = (cust) => {
@@ -376,11 +427,20 @@ setCustomerFocused(false);
                   {rows.map((r, idx) => {
                     const { totalQty48, total } = calcRow(r);
                     return (
-                      <tr key={idx}>
+                      <tr
+                        key={idx}
+                        draggable={true}
+                        style={{ cursor: "grab" }}
+                        onDragStart={() => dragStart(idx)}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={() => dragDrop(idx)}>
                         <td className="border border-black/40 p-0.5">
                           <input
                             className="w-full bg-transparent outline-none"
                             value={r.date}
+                            data-row={idx}
+                            data-col="date"
+                            onKeyDown={(e) => handleEnterMove(e, idx)}
                             onChange={(e) => updateRow(idx, "date", e.target.value)}
                           />
                         </td>
@@ -388,6 +448,9 @@ setCustomerFocused(false);
                           <input
                             className="w-full bg-transparent outline-none"
                             value={r.ashRef}
+                            data-row={idx}
+                            data-col="ashRef"
+                            onKeyDown={(e) => handleEnterMove(e, idx)}
                             onChange={(e) => updateRow(idx, "ashRef", e.target.value)}
                           />
                         </td>
@@ -395,6 +458,9 @@ setCustomerFocused(false);
                           <input
                             className="w-full bg-transparent outline-none"
                             value={r.trailer}
+                            data-row={idx}
+                            data-col="trailer"
+                            onKeyDown={(e) => handleEnterMove(e, idx)}
                             onChange={(e) => updateRow(idx, "trailer", e.target.value)}
                           />
                         </td>
@@ -402,6 +468,9 @@ setCustomerFocused(false);
                           <input
                             className="w-full bg-transparent outline-none"
                             value={r.custRef}
+                            data-row={idx}
+                            data-col="custRef"
+                            onKeyDown={(e) => handleEnterMove(e, idx)}
                             onChange={(e) => updateRow(idx, "custRef", e.target.value)}
                           />
                         </td>
@@ -410,6 +479,9 @@ setCustomerFocused(false);
                           <input
                             className="w-full bg-transparent outline-none text-right"
                             value={r.qty48x40_1}
+                            data-row={idx}
+                            data-col="qty48x40_1"
+                            onKeyDown={(e) => handleEnterMove(e, idx)}
                             onChange={(e) => updateRow(idx, "qty48x40_1", e.target.value)}
                           />
                         </td>
@@ -417,6 +489,9 @@ setCustomerFocused(false);
                           <input
                             className="w-full bg-transparent outline-none text-right"
                             value={r.qty48x40_2}
+                            data-row={idx}
+                            data-col="qty48x40_2"
+                            onKeyDown={(e) => handleEnterMove(e, idx)}
                             onChange={(e) => updateRow(idx, "qty48x40_2", e.target.value)}
                           />
                         </td>
@@ -427,6 +502,9 @@ setCustomerFocused(false);
                           <input
                             className="w-full bg-transparent outline-none text-right"
                             value={r.largeOdd}
+                            data-row={idx}
+                            data-col="largeOdd"
+                            onKeyDown={(e) => handleEnterMove(e, idx)}
                             onChange={(e) => updateRow(idx, "largeOdd", e.target.value)}
                           />
                         </td>
@@ -434,6 +512,9 @@ setCustomerFocused(false);
                           <input
                             className="w-full bg-transparent outline-none text-right"
                             value={r.smallOdd}
+                            data-row={idx}
+                            data-col="smallOdd"
+                            onKeyDown={(e) => handleEnterMove(e, idx)}
                             onChange={(e) => updateRow(idx, "smallOdd", e.target.value)}
                           />
                         </td>
@@ -441,21 +522,47 @@ setCustomerFocused(false);
                           <input
                             className="w-full bg-transparent outline-none text-right"
                             value={r.baledOcc}
+                            data-row={idx}
+                            data-col="baledOcc"
+                            onKeyDown={(e) => handleEnterMove(e, idx)}
                             onChange={(e) => updateRow(idx, "baledOcc", e.target.value)}
                           />
                         </td>
                         <td className="border border-black/40 p-0.5 text-right tabular-nums">
                           {total > 0 ? money(total) : ""}
                         </td>
+
                         <td className="no-print border border-black/40 p-0.5 text-center">
-                          <button
-                            type="button"
-                            className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white/70 px-2 py-1 text-[10px] hover:bg-white"
-                            onClick={() => clearRow(idx)}
-                            title="Clear row"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
+                          <div className="flex gap-1 justify-center">
+
+                            <button
+                              type="button"
+                              className="px-1.5 py-0.5 text-[10px] border rounded hover:bg-white"
+                              onClick={() => insertRow(idx)}
+                              title="Insert Row"
+                            >
+                              +
+                            </button>
+
+                            <button
+                              type="button"
+                              className="px-1.5 py-0.5 text-[10px] border rounded hover:bg-white"
+                              onClick={() => duplicateRow(idx)}
+                              title="Duplicate Row"
+                            >
+                              📄
+                            </button>
+
+                            <button
+                              type="button"
+                              className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white/70 px-2 py-1 text-[10px] hover:bg-white"
+                              onClick={() => clearRow(idx)}
+                              title="Clear row"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+
+                          </div>
                         </td>
                       </tr>
                     );
