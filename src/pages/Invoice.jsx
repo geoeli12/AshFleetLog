@@ -28,10 +28,12 @@ const blankRow = () => ({
   custRef: "",
   qty48x40_1: "",
   qty48x40_2: "",
+  qty48x40_1_raw: "",
+  qty48x40_2_raw: "",
   largeOdd: "",
   smallOdd: "",
   baledOcc: "",
-});
+})
 
 function coerceInt(v) {
   if (v === "" || v === null || typeof v === "undefined") return 0;
@@ -208,23 +210,30 @@ const [customerFocused, setCustomerFocused] = useState(false);
 
   const apply20Deduction = (idx, field) => {
 
-    setRows((prev) => {
+    setRows(prev => {
 
       const copy = [...prev]
+      const row = { ...copy[idx] }
 
-      const current = coerceInt(copy[idx][field])
+      const rawField = field + "_raw"
+
+      const current = coerceInt(row[field])
+      const previousRaw = coerceInt(row[rawField])
 
       if (!current) return copy
 
+      // If user didn't change the value, do nothing
+      if (previousRaw && current === Math.floor(previousRaw * 0.8)) {
+        return copy
+      }
+
+      // User typed a new number
       const adjusted = Math.floor(current * 0.8)
 
-      // If the value is already the deducted value, don't deduct again
-      if (adjusted === current) return copy
+      row[rawField] = current
+      row[field] = adjusted
 
-      copy[idx] = {
-        ...copy[idx],
-        [field]: adjusted
-      }
+      copy[idx] = row
 
       return copy
 
