@@ -508,22 +508,22 @@ setCustomerFocused(false);
           </CardHeader>
 
           <CardContent className="pt-0 print-compact-content">
-            <div className="w-full">
-              <table className="w-full border-collapse text-[11px] table-auto">
+            <div className="w-full overflow-hidden">
+              <table className="w-full border-collapse text-[11px] table-fixed">
                 <thead>
                   <tr>
-                    <th className="border border-black/40 p-1 font-semibold text-center">Date</th>
-                    <th className="border border-black/40 p-1 font-semibold text-center">Ash Pallet Ref #</th>
-                    <th className="border border-black/40 p-1 font-semibold text-center">Trailer #</th>
-                    <th className="border border-black/40 p-1 font-semibold text-center">Customer Ref #</th>
-                    <th className="border border-black/40 p-1 font-semibold text-center">48x40 #1</th>
-                    <th className="border border-black/40 p-1 font-semibold text-center">48x40 #2</th>
-                    <th className="border border-black/40 p-1 font-semibold text-center">48x40 Total</th>
-                    <th className="border border-black/40 p-1 font-semibold text-center">Large Odd</th>
-                    <th className="border border-black/40 p-1 font-semibold text-center">Small Odd</th>
-                    <th className="border border-black/40 p-1 font-semibold text-center">Baled OCC</th>
-                    <th className="border border-black/40 p-1 font-semibold text-center">Total ($)</th>
-                    <th className="no-print border border-black/40 p-1 font-semibold text-center"> </th>
+                    <th className="border border-black/40 p-1 font-semibold text-center whitespace-nowrap">Date</th>
+                    <th className="border border-black/40 p-1 font-semibold text-center whitespace-nowrap">Ash Pallet Ref #</th>
+                    <th className="border border-black/40 p-1 font-semibold text-center whitespace-nowrap">Trailer #</th>
+                    <th className="border border-black/40 p-1 font-semibold text-center whitespace-nowrap">Customer Ref #</th>
+                    <th className="border border-black/40 p-1 font-semibold text-center whitespace-nowrap">48x40 #1</th>
+                    <th className="border border-black/40 p-1 font-semibold text-center whitespace-nowrap">48x40 #2</th>
+                    <th className="border border-black/40 p-1 font-semibold text-center whitespace-nowrap">48x40 Total</th>
+                    <th className="border border-black/40 p-1 font-semibold text-center whitespace-nowrap">Large Odd</th>
+                    <th className="border border-black/40 p-1 font-semibold text-center whitespace-nowrap">Small Odd</th>
+                    <th className="border border-black/40 p-1 font-semibold text-center whitespace-nowrap">Baled OCC</th>
+                    <th className="border border-black/40 p-1 font-semibold text-center whitespace-nowrap">Total ($)</th>
+                    <th className="no-print border border-black/40 p-1 font-semibold text-center whitespace-nowrap"> </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -539,7 +539,7 @@ setCustomerFocused(false);
                         onDrop={() => dragDrop(idx)}>
                         <td className="border border-black/40 p-0.5 text-center">
                           <input
-                            className="min-w-[40px] bg-transparent outline-none text-center"
+                            className="w-full bg-transparent outline-none text-center"
                             value={r.date}
                             data-row={idx}
                             data-col="date"
@@ -552,7 +552,7 @@ setCustomerFocused(false);
                         </td>
                         <td className="border border-black/40 p-0.5 text-center">
                           <input
-                            className="min-w-[40px] bg-transparent outline-none text-center"
+                            className="w-full bg-transparent outline-none text-center"
                             value={r.ashRef}
                             data-row={idx}
                             data-col="ashRef"
@@ -565,7 +565,7 @@ setCustomerFocused(false);
                         </td>
                         <td className="border border-black/40 p-0.5 text-center">
                           <input
-                            className="min-w-[40px] bg-transparent outline-none text-center"
+                            className="w-full bg-transparent outline-none text-center"
                             value={r.trailer}
                             data-row={idx}
                             data-col="trailer"
@@ -578,7 +578,7 @@ setCustomerFocused(false);
                         </td>
                         <td className="border border-black/40 p-0.5 text-center">
                           <input
-                            className="min-w-[40px] bg-transparent outline-none text-center"
+                            className="w-full bg-transparent outline-none text-center"
                             value={r.custRef}
                             data-row={idx}
                             data-col="custRef"
@@ -592,7 +592,7 @@ setCustomerFocused(false);
 
                         <td className="border border-black/40 p-0.5 text-center">
                           <input
-                            className="min-w-[40px] bg-transparent outline-none text-center"
+                            className="w-full bg-transparent outline-none text-center"
                             value={r.qty48x40_1}
                             title={r.qty48x40_1 ? `Actual: ${r.qty48x40_1}` : ""}
                             onBlur={() => apply20Deduction(idx, "qty48x40_1")}
@@ -607,7 +607,7 @@ setCustomerFocused(false);
                         </td>
                         <td className="border border-black/40 p-0.5 text-center">
                           <input
-                            className="min-w-[40px] bg-transparent outline-none text-center"
+                            className="w-full bg-transparent outline-none text-center"
                             value={r.qty48x40_2}
                             title={r.qty48x40_2 ? `Actual: ${r.qty48x40_2}` : ""}
                             onBlur={() => apply20Deduction(idx, "qty48x40_2")}
@@ -625,7 +625,7 @@ setCustomerFocused(false);
                         </td>
                         <td className="border border-black/40 p-0.5 text-center">
                           <input
-                            className="min-w-[40px] bg-transparent outline-none text-center"
+                            className="w-full bg-transparent outline-none text-center"
                             value={r.largeOdd}
                             data-row={idx}
                             data-col="largeOdd"
@@ -638,7 +638,7 @@ setCustomerFocused(false);
                         </td>
                         <td className="border border-black/40 p-0.5 text-center">
                           <input
-                            className="min-w-[40px] bg-transparent outline-none text-center"
+                            className="w-full bg-transparent outline-none text-center"
                             value={r.smallOdd}
                             data-row={idx}
                             data-col="smallOdd"
@@ -651,7 +651,7 @@ setCustomerFocused(false);
                         </td>
                         <td className="border border-black/40 p-0.5 text-center">
                           <input
-                            className="min-w-[40px] bg-transparent outline-none text-center"
+                            className="w-full bg-transparent outline-none text-center"
                             value={r.baledOcc}
                             data-row={idx}
                             data-col="baledOcc"
