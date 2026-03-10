@@ -218,6 +218,14 @@ const [customerFocused, setCustomerFocused] = useState(false);
   };
 
   const handleArrowMove = (e, idx) => {
+
+    if (
+      e.key !== "ArrowRight" &&
+      e.key !== "ArrowLeft" &&
+      e.key !== "ArrowDown" &&
+      e.key !== "ArrowUp"
+    ) return;
+
     const row = Number(e.target.dataset.row);
     const col = e.target.dataset.col;
 
@@ -253,6 +261,7 @@ const [customerFocused, setCustomerFocused] = useState(false);
       e.preventDefault();
       next.focus();
     }
+
   };
 
   const clearRow = (idx) => {
