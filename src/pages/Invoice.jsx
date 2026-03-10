@@ -369,12 +369,11 @@ setCustomerFocused(false);
               <div className="text-sm text-neutral-600">Print-ready entry screen</div>
             </div>
           </div>
-          <Button onClick={() => window.print()} className="bg-neutral-900 hover:bg-neutral-800">
+          <Button onClick={() => window.print()} className="bg-neutral-900 hover:bg-neutral-800 text-white font-semibold">
             <Printer className="w-4 h-4 mr-2" />
             Print
           </Button>
         </div>
-
         <Card className="print-sheet rounded-2xl border border-black/10 shadow-sm">
           <CardHeader className="pb-3 print-compact-header">
             <CardTitle className="sr-only">Invoice Sheet</CardTitle>
@@ -456,11 +455,24 @@ setCustomerFocused(false);
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
                   <div className="sm:col-span-2 flex items-center gap-2 justify-end">
                     <Label className="whitespace-nowrap">Month</Label>
-                    <Input
+                    <select
                       value={invoiceMonth}
                       onChange={(e) => setInvoiceMonth(e.target.value)}
-                      className="h-8 max-w-[240px]"
-                    />
+                      className="h-8 border rounded px-2 max-w-[240px]"
+                    >
+                      <option value="January">January</option>
+                      <option value="February">February</option>
+                      <option value="March">March</option>
+                      <option value="April">April</option>
+                      <option value="May">May</option>
+                      <option value="June">June</option>
+                      <option value="July">July</option>
+                      <option value="August">August</option>
+                      <option value="September">September</option>
+                      <option value="October">October</option>
+                      <option value="November">November</option>
+                      <option value="December">December</option>
+                    </select>
                   </div>
                   <div className="flex items-center gap-2 justify-end">
                     <Label className="whitespace-nowrap">DT -</Label>
@@ -496,8 +508,8 @@ setCustomerFocused(false);
           </CardHeader>
 
           <CardContent className="pt-0 print-compact-content">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-[11px]">
+            <div className="w-full">
+              <table className="w-full border-collapse text-[11px] table-auto">
                 <thead>
                   <tr>
                     <th className="border border-black/40 p-1 font-semibold text-center">Date</th>
@@ -525,9 +537,9 @@ setCustomerFocused(false);
                         onDragStart={() => dragStart(idx)}
                         onDragOver={(e) => e.preventDefault()}
                         onDrop={() => dragDrop(idx)}>
-                        <td className="border border-black/40 p-0.5">
+                        <td className="border border-black/40 p-0.5 text-center">
                           <input
-                            className="w-full bg-transparent outline-none"
+                            className="min-w-[40px] bg-transparent outline-none text-center"
                             value={r.date}
                             data-row={idx}
                             data-col="date"
@@ -538,9 +550,9 @@ setCustomerFocused(false);
                             onChange={(e) => updateRow(idx, "date", e.target.value)}
                           />
                         </td>
-                        <td className="border border-black/40 p-0.5">
+                        <td className="border border-black/40 p-0.5 text-center">
                           <input
-                            className="w-full bg-transparent outline-none"
+                            className="min-w-[40px] bg-transparent outline-none text-center"
                             value={r.ashRef}
                             data-row={idx}
                             data-col="ashRef"
@@ -551,9 +563,9 @@ setCustomerFocused(false);
                             onChange={(e) => updateRow(idx, "ashRef", e.target.value)}
                           />
                         </td>
-                        <td className="border border-black/40 p-0.5">
+                        <td className="border border-black/40 p-0.5 text-center">
                           <input
-                            className="w-full bg-transparent outline-none"
+                            className="min-w-[40px] bg-transparent outline-none text-center"
                             value={r.trailer}
                             data-row={idx}
                             data-col="trailer"
@@ -564,9 +576,9 @@ setCustomerFocused(false);
                             onChange={(e) => updateRow(idx, "trailer", e.target.value)}
                           />
                         </td>
-                        <td className="border border-black/40 p-0.5">
+                        <td className="border border-black/40 p-0.5 text-center">
                           <input
-                            className="w-full bg-transparent outline-none"
+                            className="min-w-[40px] bg-transparent outline-none text-center"
                             value={r.custRef}
                             data-row={idx}
                             data-col="custRef"
@@ -578,9 +590,9 @@ setCustomerFocused(false);
                           />
                         </td>
 
-                        <td className="border border-black/40 p-0.5 text-right">
+                        <td className="border border-black/40 p-0.5 text-center">
                           <input
-                            className="w-full bg-transparent outline-none text-right"
+                            className="min-w-[40px] bg-transparent outline-none text-center"
                             value={r.qty48x40_1}
                             title={r.qty48x40_1 ? `Actual: ${r.qty48x40_1}` : ""}
                             onBlur={() => apply20Deduction(idx, "qty48x40_1")}
@@ -593,9 +605,9 @@ setCustomerFocused(false);
                             onChange={(e) => updateRow(idx, "qty48x40_1", e.target.value)}
                           />
                         </td>
-                        <td className="border border-black/40 p-0.5 text-right">
+                        <td className="border border-black/40 p-0.5 text-center">
                           <input
-                            className="w-full bg-transparent outline-none text-right"
+                            className="min-w-[40px] bg-transparent outline-none text-center"
                             value={r.qty48x40_2}
                             title={r.qty48x40_2 ? `Actual: ${r.qty48x40_2}` : ""}
                             onBlur={() => apply20Deduction(idx, "qty48x40_2")}
@@ -608,12 +620,12 @@ setCustomerFocused(false);
                             onChange={(e) => updateRow(idx, "qty48x40_2", e.target.value)}
                           />
                         </td>
-                        <td className="border border-black/40 p-0.5 text-right tabular-nums">
+                        <td className="border border-black/40 p-0.5 text-center tabular-nums whitespace-nowrap">
                           {totalQty48 ? totalQty48 : ""}
                         </td>
-                        <td className="border border-black/40 p-0.5 text-right">
+                        <td className="border border-black/40 p-0.5 text-center">
                           <input
-                            className="w-full bg-transparent outline-none text-right"
+                            className="min-w-[40px] bg-transparent outline-none text-center"
                             value={r.largeOdd}
                             data-row={idx}
                             data-col="largeOdd"
@@ -624,9 +636,9 @@ setCustomerFocused(false);
                             onChange={(e) => updateRow(idx, "largeOdd", e.target.value)}
                           />
                         </td>
-                        <td className="border border-black/40 p-0.5 text-right">
+                        <td className="border border-black/40 p-0.5 text-center">
                           <input
-                            className="w-full bg-transparent outline-none text-right"
+                            className="min-w-[40px] bg-transparent outline-none text-center"
                             value={r.smallOdd}
                             data-row={idx}
                             data-col="smallOdd"
@@ -637,9 +649,9 @@ setCustomerFocused(false);
                             onChange={(e) => updateRow(idx, "smallOdd", e.target.value)}
                           />
                         </td>
-                        <td className="border border-black/40 p-0.5 text-right">
+                        <td className="border border-black/40 p-0.5 text-center">
                           <input
-                            className="w-full bg-transparent outline-none text-right"
+                            className="min-w-[40px] bg-transparent outline-none text-center"
                             value={r.baledOcc}
                             data-row={idx}
                             data-col="baledOcc"
@@ -650,7 +662,7 @@ setCustomerFocused(false);
                             onChange={(e) => updateRow(idx, "baledOcc", e.target.value)}
                           />
                         </td>
-                        <td className="border border-black/40 p-0.5 text-right tabular-nums">
+                        <td className="border border-black/40 p-0.5 text-right tabular-nums whitespace-nowrap">
                           {total > 0 ? money(total) : ""}
                         </td>
 
@@ -694,13 +706,13 @@ setCustomerFocused(false);
                     <td className="border border-black/40 p-0.5" colSpan={4}>
                       <div className="text-right font-semibold pr-2">Totals</div>
                     </td>
-                    <td className="border border-black/40 p-0.5 text-right font-semibold">{totals.t1 || ""}</td>
-                    <td className="border border-black/40 p-0.5 text-right font-semibold">{totals.t2 || ""}</td>
-                    <td className="border border-black/40 p-0.5 text-right font-semibold">{totals.t48 || ""}</td>
-                    <td className="border border-black/40 p-0.5 text-right font-semibold">{totals.tLarge || ""}</td>
-                    <td className="border border-black/40 p-0.5 text-right font-semibold">{totals.tSmall || ""}</td>
-                    <td className="border border-black/40 p-0.5 text-right font-semibold">{totals.tOcc || ""}</td>
-                    <td className="border border-black/40 p-0.5 text-right font-semibold">
+                    <td className="border border-black/40 p-0.5 text-center font-semibold tabular-nums whitespace-nowrap">{totals.t1 || ""}</td>
+                    <td className="border border-black/40 p-0.5 text-center font-semibold tabular-nums whitespace-nowrap">{totals.t2 || ""}</td>
+                    <td className="border border-black/40 p-0.5 text-center font-semibold tabular-nums whitespace-nowrap">{totals.t48 || ""}</td>
+                    <td className="border border-black/40 p-0.5 text-center font-semibold tabular-nums whitespace-nowrap">{totals.tLarge || ""}</td>
+                    <td className="border border-black/40 p-0.5 text-center font-semibold tabular-nums whitespace-nowrap">{totals.tSmall || ""}</td>
+                    <td className="border border-black/40 p-0.5 text-center font-semibold tabular-nums whitespace-nowrap">{totals.tOcc || ""}</td>
+                    <td className="border border-black/40 p-0.5 text-center font-semibold tabular-nums whitespace-nowrap">
                       {totals.grand ? money(totals.grand) : ""}
                     </td>
                     <td className="no-print border border-black/40 p-0.5" />
