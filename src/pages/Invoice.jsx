@@ -594,7 +594,7 @@ setCustomerFocused(false);
                           <input
                             className="w-full bg-transparent outline-none text-center"
                             value={r.qty48x40_1}
-                            title={r.qty48x40_1 ? `Actual: ${r.qty48x40_1}` : ""}
+                            title={r.qty48x40_1_raw ? `Entered: ${r.qty48x40_1_raw}` : ""}
                             onBlur={() => apply20Deduction(idx, "qty48x40_1")}
                             data-row={idx}
                             data-col="qty48x40_1"
@@ -609,7 +609,7 @@ setCustomerFocused(false);
                           <input
                             className="w-full bg-transparent outline-none text-center"
                             value={r.qty48x40_2}
-                            title={r.qty48x40_2 ? `Actual: ${r.qty48x40_2}` : ""}
+                            title={r.qty48x40_2_raw ? `Entered: ${r.qty48x40_2_raw}` : ""}
                             onBlur={() => apply20Deduction(idx, "qty48x40_2")}
                             data-row={idx}
                             data-col="qty48x40_2"
