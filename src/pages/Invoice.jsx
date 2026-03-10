@@ -207,22 +207,29 @@ const [customerFocused, setCustomerFocused] = useState(false);
   };
 
   const apply20Deduction = (idx, field) => {
+
     setRows((prev) => {
+
       const copy = [...prev]
+
       const current = coerceInt(copy[idx][field])
+
       if (!current) return copy
-      const expectedOriginal = Math.round(current / 0.8)
-      const recalculated = Math.floor(expectedOriginal * 0.8)
-      if (recalculated === current) {
-        return copy
-      }
+
       const adjusted = Math.floor(current * 0.8)
+
+      // If the value is already the deducted value, don't deduct again
+      if (adjusted === current) return copy
+
       copy[idx] = {
         ...copy[idx],
         [field]: adjusted
       }
+
       return copy
+
     })
+
   }
 
   const handleEnterMove = (e, idx) => {
