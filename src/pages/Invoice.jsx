@@ -208,6 +208,25 @@ const [customerFocused, setCustomerFocused] = useState(false);
     });
   };
 
+  const apply20Deduction = (idx, field) => {
+    setRows((prev) => {
+      const copy = [...prev]
+
+      const raw = coerceInt(copy[idx][field])
+
+      if (!raw) return copy
+
+      const adjusted = Math.floor(raw * 0.8)
+
+      copy[idx] = {
+        ...copy[idx],
+        [field]: adjusted
+      }
+
+      return copy
+    })
+  }
+
   const handleEnterMove = (e, idx) => {
     if (e.key !== "Enter") return;
 
@@ -548,8 +567,9 @@ setCustomerFocused(false);
                         <td className="border border-black/40 p-0.5 text-right">
                           <input
                             className="w-full bg-transparent outline-none text-right"
-                            value={r.qty48x40_1 ? deduct20(r.qty48x40_1) : ""}
+                            value={r.qty48x40_1}
                             title={r.qty48x40_1 ? `Actual: ${r.qty48x40_1}` : ""}
+                            onBlur={() => apply20Deduction(idx, "qty48x40_1")}
                             data-row={idx}
                             data-col="qty48x40_1"
                             onKeyDown={(e) => {
@@ -562,8 +582,9 @@ setCustomerFocused(false);
                         <td className="border border-black/40 p-0.5 text-right">
                           <input
                             className="w-full bg-transparent outline-none text-right"
-                            value={r.qty48x40_2 ? deduct20(r.qty48x40_2) : ""}
+                            value={r.qty48x40_2}
                             title={r.qty48x40_2 ? `Actual: ${r.qty48x40_2}` : ""}
+                            onBlur={() => apply20Deduction(idx, "qty48x40_2")}
                             data-row={idx}
                             data-col="qty48x40_2"
                             onKeyDown={(e) => {
