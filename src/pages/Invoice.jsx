@@ -147,10 +147,8 @@ const [customerFocused, setCustomerFocused] = useState(false);
   };
 
   const calcRow = (r) => {
-    const raw1 = coerceInt(r.qty48x40_1);
-    const raw2 = coerceInt(r.qty48x40_2);
-    const q1 = deduct20(raw1);
-    const q2 = deduct20(raw2);
+    const q1 = coerceInt(r.qty48x40_1);
+    const q2 = coerceInt(r.qty48x40_2);
     const qLarge = coerceInt(r.largeOdd);
     const qSmall = coerceInt(r.smallOdd);
     const qOcc = coerceInt(r.baledOcc);
