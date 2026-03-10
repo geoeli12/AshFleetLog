@@ -147,20 +147,22 @@ const [customerFocused, setCustomerFocused] = useState(false);
   };
 
   const calcRow = (r) => {
-    const q1 = deduct20(r.qty48x40_1);
-    const q2 = deduct20(r.qty48x40_2);
+    const raw1 = coerceInt(r.qty48x40_1);
+    const raw2 = coerceInt(r.qty48x40_2);
+    const q1 = deduct20(raw1);
+    const q2 = deduct20(raw2);
     const qLarge = coerceInt(r.largeOdd);
     const qSmall = coerceInt(r.smallOdd);
     const qOcc = coerceInt(r.baledOcc);
     const { p48x40_1, p48x40_2, pLargeOdd, pSmallOdd, pBaledOcc } = getUnitPrices();
-    const totalQty48 = deduct20(q1 + q2);
+    const totalQty48 = q1 + q2;
     const total =
       q1 * p48x40_1 +
       q2 * p48x40_2 +
       qLarge * pLargeOdd +
       qSmall * pSmallOdd +
       qOcc * pBaledOcc;
-    return { totalQty48, total };
+    return { q1, q2, totalQty48, total };
   };
 
   const totals = useMemo(() => {
@@ -546,7 +548,8 @@ setCustomerFocused(false);
                         <td className="border border-black/40 p-0.5 text-right">
                           <input
                             className="w-full bg-transparent outline-none text-right"
-                            value={r.qty48x40_1}
+                            value={r.qty48x40_1 ? deduct20(r.qty48x40_1) : ""}
+                            title={r.qty48x40_1 ? `Actual: ${r.qty48x40_1}` : ""}
                             data-row={idx}
                             data-col="qty48x40_1"
                             onKeyDown={(e) => {
@@ -559,7 +562,8 @@ setCustomerFocused(false);
                         <td className="border border-black/40 p-0.5 text-right">
                           <input
                             className="w-full bg-transparent outline-none text-right"
-                            value={r.qty48x40_2}
+                            value={r.qty48x40_2 ? deduct20(r.qty48x40_2) : ""}
+                            title={r.qty48x40_2 ? `Actual: ${r.qty48x40_2}` : ""}
                             data-row={idx}
                             data-col="qty48x40_2"
                             onKeyDown={(e) => {
