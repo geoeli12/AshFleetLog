@@ -39,6 +39,15 @@ function coerceInt(v) {
   return Number.isFinite(n) ? n : 0;
 }
 
+function deduct20(v) {
+  const n = coerceInt(v);
+  if (!n) return 0;
+
+  const result = n * 0.8;
+
+  return Math.floor(result);
+}
+
 function safeNum(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
@@ -138,13 +147,13 @@ const [customerFocused, setCustomerFocused] = useState(false);
   };
 
   const calcRow = (r) => {
-    const q1 = coerceInt(r.qty48x40_1);
-    const q2 = coerceInt(r.qty48x40_2);
+    const q1 = deduct20(r.qty48x40_1);
+    const q2 = deduct20(r.qty48x40_2);
     const qLarge = coerceInt(r.largeOdd);
     const qSmall = coerceInt(r.smallOdd);
     const qOcc = coerceInt(r.baledOcc);
     const { p48x40_1, p48x40_2, pLargeOdd, pSmallOdd, pBaledOcc } = getUnitPrices();
-    const totalQty48 = q1 + q2;
+    const totalQty48 = deduct20(q1 + q2);
     const total =
       q1 * p48x40_1 +
       q2 * p48x40_2 +
@@ -206,6 +215,44 @@ const [customerFocused, setCustomerFocused] = useState(false);
     const next = document.querySelector(`[data-row="${nextRow}"][data-col="${e.target.dataset.col}"]`);
 
     if (next) next.focus();
+  };
+
+  const handleArrowMove = (e, idx) => {
+    const row = Number(e.target.dataset.row);
+    const col = e.target.dataset.col;
+
+    const cols = [
+      "date",
+      "ashRef",
+      "trailer",
+      "custRef",
+      "qty48x40_1",
+      "qty48x40_2",
+      "largeOdd",
+      "smallOdd",
+      "baledOcc"
+    ];
+
+    const colIndex = cols.indexOf(col);
+
+    let targetRow = row;
+    let targetCol = colIndex;
+
+    if (e.key === "ArrowRight") targetCol++;
+    if (e.key === "ArrowLeft") targetCol--;
+    if (e.key === "ArrowDown") targetRow++;
+    if (e.key === "ArrowUp") targetRow--;
+
+    if (targetCol < 0 || targetCol >= cols.length) return;
+
+    const next = document.querySelector(
+      `[data-row="${targetRow}"][data-col="${cols[targetCol]}"]`
+    );
+
+    if (next) {
+      e.preventDefault();
+      next.focus();
+    }
   };
 
   const clearRow = (idx) => {
@@ -440,7 +487,10 @@ setCustomerFocused(false);
                             value={r.date}
                             data-row={idx}
                             data-col="date"
-                            onKeyDown={(e) => handleEnterMove(e, idx)}
+                            onKeyDown={(e) => {
+                              handleEnterMove(e, idx);
+                              handleArrowMove(e, idx);
+                            }}
                             onChange={(e) => updateRow(idx, "date", e.target.value)}
                           />
                         </td>
@@ -450,7 +500,10 @@ setCustomerFocused(false);
                             value={r.ashRef}
                             data-row={idx}
                             data-col="ashRef"
-                            onKeyDown={(e) => handleEnterMove(e, idx)}
+                            onKeyDown={(e) => {
+                              handleEnterMove(e, idx);
+                              handleArrowMove(e, idx);
+                            }}
                             onChange={(e) => updateRow(idx, "ashRef", e.target.value)}
                           />
                         </td>
@@ -460,7 +513,10 @@ setCustomerFocused(false);
                             value={r.trailer}
                             data-row={idx}
                             data-col="trailer"
-                            onKeyDown={(e) => handleEnterMove(e, idx)}
+                            onKeyDown={(e) => {
+                              handleEnterMove(e, idx);
+                              handleArrowMove(e, idx);
+                            }}
                             onChange={(e) => updateRow(idx, "trailer", e.target.value)}
                           />
                         </td>
@@ -470,7 +526,10 @@ setCustomerFocused(false);
                             value={r.custRef}
                             data-row={idx}
                             data-col="custRef"
-                            onKeyDown={(e) => handleEnterMove(e, idx)}
+                            onKeyDown={(e) => {
+                              handleEnterMove(e, idx);
+                              handleArrowMove(e, idx);
+                            }}
                             onChange={(e) => updateRow(idx, "custRef", e.target.value)}
                           />
                         </td>
@@ -481,7 +540,10 @@ setCustomerFocused(false);
                             value={r.qty48x40_1}
                             data-row={idx}
                             data-col="qty48x40_1"
-                            onKeyDown={(e) => handleEnterMove(e, idx)}
+                            onKeyDown={(e) => {
+                              handleEnterMove(e, idx);
+                              handleArrowMove(e, idx);
+                            }}
                             onChange={(e) => updateRow(idx, "qty48x40_1", e.target.value)}
                           />
                         </td>
@@ -491,7 +553,10 @@ setCustomerFocused(false);
                             value={r.qty48x40_2}
                             data-row={idx}
                             data-col="qty48x40_2"
-                            onKeyDown={(e) => handleEnterMove(e, idx)}
+                            onKeyDown={(e) => {
+                              handleEnterMove(e, idx);
+                              handleArrowMove(e, idx);
+                            }}
                             onChange={(e) => updateRow(idx, "qty48x40_2", e.target.value)}
                           />
                         </td>
@@ -504,7 +569,10 @@ setCustomerFocused(false);
                             value={r.largeOdd}
                             data-row={idx}
                             data-col="largeOdd"
-                            onKeyDown={(e) => handleEnterMove(e, idx)}
+                            onKeyDown={(e) => {
+                              handleEnterMove(e, idx);
+                              handleArrowMove(e, idx);
+                            }}
                             onChange={(e) => updateRow(idx, "largeOdd", e.target.value)}
                           />
                         </td>
@@ -514,7 +582,10 @@ setCustomerFocused(false);
                             value={r.smallOdd}
                             data-row={idx}
                             data-col="smallOdd"
-                            onKeyDown={(e) => handleEnterMove(e, idx)}
+                            onKeyDown={(e) => {
+                              handleEnterMove(e, idx);
+                              handleArrowMove(e, idx);
+                            }}
                             onChange={(e) => updateRow(idx, "smallOdd", e.target.value)}
                           />
                         </td>
@@ -524,7 +595,10 @@ setCustomerFocused(false);
                             value={r.baledOcc}
                             data-row={idx}
                             data-col="baledOcc"
-                            onKeyDown={(e) => handleEnterMove(e, idx)}
+                            onKeyDown={(e) => {
+                              handleEnterMove(e, idx);
+                              handleArrowMove(e, idx);
+                            }}
                             onChange={(e) => updateRow(idx, "baledOcc", e.target.value)}
                           />
                         </td>
