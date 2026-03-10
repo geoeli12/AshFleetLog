@@ -209,18 +209,18 @@ const [customerFocused, setCustomerFocused] = useState(false);
   const apply20Deduction = (idx, field) => {
     setRows((prev) => {
       const copy = [...prev]
-
-      const raw = coerceInt(copy[idx][field])
-
-      if (!raw) return copy
-
-      const adjusted = Math.floor(raw * 0.8)
-
+      const current = coerceInt(copy[idx][field])
+      if (!current) return copy
+      const expectedOriginal = Math.round(current / 0.8)
+      const recalculated = Math.floor(expectedOriginal * 0.8)
+      if (recalculated === current) {
+        return copy
+      }
+      const adjusted = Math.floor(current * 0.8)
       copy[idx] = {
         ...copy[idx],
         [field]: adjusted
       }
-
       return copy
     })
   }
