@@ -279,6 +279,12 @@ export default function DispatchLog() {
 
   const uiLogs = useMemo(() => unwrapListResult(rawOrders).map(toUiLog), [rawOrders]);
 
+  React.useEffect(() => {
+    if (!uiLogs?.length) return;
+
+    duplicateUnfinishedOrders();
+  }, [selectedDate, region, uiLogs]);
+
   const createMutation = useMutation({
     mutationFn: async (uiData) => api.entities.DispatchOrder.create(toDbPayload(uiData)),
     onSuccess: (created, variables) => {
@@ -309,6 +315,56 @@ export default function DispatchLog() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["dispatchOrders"] }),
     onError: (e) => toast.error(e?.message || "Failed to delete entry"),
   });
+
+  // Duplicate unfinished loads forward until dispatched
+  const duplicateUnfinishedOrders = async () => {
+    try {
+      const selected = parseYMDToLocalDate(selectedDate);
+
+      const unfinished = uiLogs.filter((log) => {
+        const delivered = String(log.delivered_by ?? "").trim().toLowerCase();
+
+        if (delivered && delivered !== "no") return false;
+
+        const logDate = parseYMDToLocalDate(log.date);
+
+        return (
+          logDate < selected &&
+          String(log.region || "").toUpperCase() === String(region).toUpperCase()
+        );
+      });
+
+      if (!unfinished.length) return;
+
+      for (const row of unfinished) {
+
+        // prevent duplicate storms on refresh
+        const alreadyExists = uiLogs.some((log) => {
+          return (
+            toYMD(log.date) === selectedDate &&
+            log.company === row.company &&
+            log.trailer_number === row.trailer_number &&
+            (log.bol || "") === (row.bol || "")
+          );
+        });
+
+        if (alreadyExists) continue;
+
+        const newRow = {
+          ...row,
+          date: selectedDate,
+          delivered_by: "",
+          bol: row.bol || ""
+        };
+
+        await createMutation.mutateAsync(newRow);
+      }
+
+      toast.success(`${unfinished.length} unfinished orders duplicated`);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const filteredLogs = useMemo(() => {
     const base = Array.isArray(uiLogs) ? uiLogs : [];
