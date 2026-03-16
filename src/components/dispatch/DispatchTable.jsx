@@ -72,6 +72,33 @@ export default function DispatchTable({
     setEditData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleKeyNav = (e) => {
+    const td = e.target.closest("div[class*='w-'], div[class*='flex-1']");
+    const row = e.target.closest(".flex.items-center");
+
+    if (!td || !row) return;
+
+    const cells = Array.from(row.querySelectorAll("input"));
+    const currentIndex = cells.indexOf(e.target);
+
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      const next = cells[currentIndex + 1];
+      if (next) next.focus();
+    }
+
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      const prev = cells[currentIndex - 1];
+      if (prev) prev.focus();
+    }
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+      saveEdit();
+    }
+  };
+
   const baseColumns = useMemo(
     () => [
       { key: "__move__", label: "", width: "w-10" },
@@ -200,6 +227,7 @@ export default function DispatchTable({
                                     <Input
                                       value={editData[col.key] || ""}
                                       onChange={(e) => handleChange(col.key, e.target.value)}
+                                      onKeyDown={handleKeyNav}
                                       className="h-9"
                                       onClick={(e) => e.stopPropagation()}
                                     />
