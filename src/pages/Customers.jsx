@@ -117,11 +117,6 @@ function CustomerEditorDialog({ open, onOpenChange, title, initial, onSave, isSa
       const derived = extractWeekendHours(next.receivingNotes);
       if (derived) next.weekendHours = derived;
     }
-    // Backward-compat: if older "distance" exists but "dis" is empty, copy it into Distance
-    if (!String(next.dis ?? "").trim() && String(next.distance ?? "").trim()) {
-      next.dis = String(next.distance ?? "").trim();
-    }
-
 
     setForm(next);
   }, [initial, open]);
@@ -184,7 +179,7 @@ function CustomerEditorDialog({ open, onOpenChange, title, initial, onSave, isSa
 
           <div className="space-y-2">
             <Label>Distance</Label>
-            <Input value={form.dis || ""} onChange={set("dis")} className="rounded-xl" placeholder="e.g., 18 mi" />
+            <Input value={form.distance || ""} onChange={set("distance")} className="rounded-xl" placeholder="e.g., 18 mi" />
           </div>
 
           <div className="space-y-2">
@@ -294,7 +289,7 @@ function CustomerCard({ row, onEdit, onDelete, onCopy }) {
   const hasContact = !!String(row?.contact || "").trim();
   const hasContactPhone = !!String(row?.contactPhone || "").trim();
   const hasContactEmail = !!String(row?.contactEmail || "").trim();
-  const distanceVal = String(row?.dis ?? "").trim() || String(row?.distance ?? "").trim();
+  const distanceVal = String(row?.distance ?? "").trim();
   const hasDistance = !!distanceVal;
   const hasDrop = !!String(row?.dropTrailers || "").trim();
   const hasCoords = !!String(row?.coordinates || "").trim();
@@ -336,7 +331,7 @@ function CustomerCard({ row, onEdit, onDelete, onCopy }) {
       row?.contact ? `Contact: ${row.contact}` : "",
       row?.contactPhone ? `Phone: ${row.contactPhone}` : "",
       row?.contactEmail ? `Email: ${row.contactEmail}` : "",
-    (String(row?.dis ?? "").trim() || String(row?.distance ?? "").trim()) ? `Distance: ${String(row?.dis ?? "").trim() || String(row?.distance ?? "").trim()}` : "",
+      row?.distance ? `Distance: ${row.distance}` : "",
       row?.eta ? `ETA: ${row.eta}` : ""
     );
 
@@ -600,7 +595,7 @@ export default function Customers() {
             r?.notes,
             r?.dropTrailers,
             r?.coordinates,
-            r?.dis,
+            r?.distance,
             r?.eta,
             r?.weekendHours,
             r?.pricePayMixed,
@@ -652,7 +647,7 @@ export default function Customers() {
 dropTrailers: "",
       weekendHours: "",
       coordinates: "",
-      dis: "",
+      distance: "",
       eta: "",
       pricePayMixed: "",
       priceFlatRate: "",
@@ -673,22 +668,20 @@ dropTrailers: "",
   };
 
   const saveRow = (draft) => {
-    const { distance: _distance, ...draftRest } = (draft || {});
 
     const cleaned = {
-      ...draftRest,
       customer: displayCustomerName(draft?.customer),
       address: String(draft?.address ?? "").trim(),
-      receivingHours: String(draft?.receivingHours ?? "").trim(),
-      receivingNotes: String(draft?.receivingNotes ?? "").trim(),
-      weekendHours: String(draft?.weekendHours ?? "").trim(),
+      receiving_hours: String(draft?.receivingHours ?? "").trim(),
+      receiving_notes: String(draft?.receivingNotes ?? "").trim(),
+      weekend_hours: String(draft?.weekendHours ?? "").trim(),
       contact: String(draft?.contact ?? "").trim(),
-      contactPhone: String(draft?.contactPhone ?? "").trim(),
-      contactEmail: String(draft?.contactEmail ?? "").trim(),
+      contact_phone: String(draft?.contactPhone ?? "").trim(),
+      contact_email: String(draft?.contactEmail ?? "").trim(),
       notes: String(draft?.notes ?? "").trim(),
-      dropTrailers: String(draft?.dropTrailers ?? "").trim(),
+      drop_trailers: String(draft?.dropTrailers ?? "").trim(),
       coordinates: String(draft?.coordinates ?? "").trim(),
-      dis: String(draft?.dis ?? "").trim(),
+      distance: String(draft?.distance ?? "").trim(),
       eta: String(draft?.eta ?? "").trim(),
       pricePayMixed: String(draft?.pricePayMixed ?? "").trim(),
       priceFlatRate: String(draft?.priceFlatRate ?? "").trim(),
