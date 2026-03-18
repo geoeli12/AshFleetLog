@@ -248,12 +248,19 @@ export default function DispatchLog() {
     if (!ids.length) return list;
 
     const pos = new Map(ids.map((id, i) => [String(id), i]));
+
     return list
       .map((item, idx) => ({ item, idx }))
       .sort((a, b) => {
-        const ap = pos.has(String(a.item.id)) ? pos.get(String(a.item.id)) : 1e9 + a.idx;
-        const bp = pos.has(String(b.item.id)) ? pos.get(String(b.item.id)) : 1e9 + b.idx;
-        return ap - bp;
+        const aHas = pos.has(String(a.item.id));
+        const bHas = pos.has(String(b.item.id));
+
+        if (aHas && bHas) return pos.get(String(a.item.id)) - pos.get(String(b.item.id));
+        if (aHas) return -1;
+        if (bHas) return 1;
+
+        // keep original order for unknown rows
+        return a.idx - b.idx;
       })
       .map((x) => x.item);
   };
@@ -293,11 +300,23 @@ export default function DispatchLog() {
       queryClient.setQueryData(["dispatchOrders"], (old) => {
         const arr = unwrapListResult(old);
         if (!created) return arr;
+
         // Prevent duplicates if invalidate refetch returns the same row
         const createdId = created.id ?? created?.data?.id;
         const exists = createdId != null && arr.some((x) => (x?.id ?? x?.data?.id) === createdId);
+
         return exists ? arr : [created, ...arr];
       });
+
+      // THIS IS THE KEY FIX (adds new rows to TOP of manual order)
+      const createdId = created?.id ?? created?.data?.id;
+      if (createdId) {
+        persistManualOrder([
+          String(createdId),
+          ...manualOrderIds.filter((id) => id !== String(createdId))
+        ]);
+      }
+
       queryClient.invalidateQueries({ queryKey: ["dispatchOrders"] });
       toast.success("Entry added");
     },
@@ -387,23 +406,7 @@ export default function DispatchLog() {
     // 1) Rows WITH a real BOL stay together (top section)
     // 2) Rows WITHOUT a real BOL stay together (bottom section)
     // 3) Within each section, keep the order stable by created_at (or id as fallback)
-    const defaultSorted = filtered
-      .slice()
-      .sort((a, b) => {
-        const aBol = hasRealBol(a);
-        const bBol = hasRealBol(b);
-        if (aBol !== bBol) return aBol ? -1 : 1;
-
-        const at = a.created_at ? new Date(a.created_at).getTime() : NaN;
-        const bt = b.created_at ? new Date(b.created_at).getTime() : NaN;
-        const aHas = Number.isFinite(at);
-        const bHas = Number.isFinite(bt);
-        if (aHas && bHas && at !== bt) return at - bt;
-        const ai = typeof a.id === "number" ? a.id : Number(String(a.id ?? "").replace(/\D/g, ""));
-        const bi = typeof b.id === "number" ? b.id : Number(String(b.id ?? "").replace(/\D/g, ""));
-        if (Number.isFinite(ai) && Number.isFinite(bi) && ai !== bi) return ai - bi;
-        return 0;
-      });
+    const defaultSorted = filtered.slice();
 
     return applyManualOrder(defaultSorted, manualOrderIds);
   }, [uiLogs, selectedDate, searchTerm, region, manualOrderIds]);
