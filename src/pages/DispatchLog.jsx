@@ -255,11 +255,14 @@ export default function DispatchLog() {
         const aHas = pos.has(String(a.item.id));
         const bHas = pos.has(String(b.item.id));
 
+        // both manually ordered → respect manual order
         if (aHas && bHas) return pos.get(String(a.item.id)) - pos.get(String(b.item.id));
+
+        // only one manually ordered → manual comes first
         if (aHas) return -1;
         if (bHas) return 1;
 
-        // keep original order for unknown rows
+        // neither manually ordered → KEEP ORIGINAL SORT (this is what you lost before)
         return a.idx - b.idx;
       })
       .map((x) => x.item);
@@ -300,23 +303,11 @@ export default function DispatchLog() {
       queryClient.setQueryData(["dispatchOrders"], (old) => {
         const arr = unwrapListResult(old);
         if (!created) return arr;
-
         // Prevent duplicates if invalidate refetch returns the same row
         const createdId = created.id ?? created?.data?.id;
         const exists = createdId != null && arr.some((x) => (x?.id ?? x?.data?.id) === createdId);
-
         return exists ? arr : [created, ...arr];
       });
-
-      // THIS IS THE KEY FIX (adds new rows to TOP of manual order)
-      const createdId = created?.id ?? created?.data?.id;
-      if (createdId) {
-        persistManualOrder([
-          String(createdId),
-          ...manualOrderIds.filter((id) => id !== String(createdId))
-        ]);
-      }
-
       queryClient.invalidateQueries({ queryKey: ["dispatchOrders"] });
       toast.success("Entry added");
     },
@@ -406,7 +397,23 @@ export default function DispatchLog() {
     // 1) Rows WITH a real BOL stay together (top section)
     // 2) Rows WITHOUT a real BOL stay together (bottom section)
     // 3) Within each section, keep the order stable by created_at (or id as fallback)
-    const defaultSorted = filtered.slice();
+    const defaultSorted = filtered
+      .slice()
+      .sort((a, b) => {
+        const aBol = hasRealBol(a);
+        const bBol = hasRealBol(b);
+        if (aBol !== bBol) return aBol ? -1 : 1;
+
+        const at = a.created_at ? new Date(a.created_at).getTime() : NaN;
+        const bt = b.created_at ? new Date(b.created_at).getTime() : NaN;
+        const aHas = Number.isFinite(at);
+        const bHas = Number.isFinite(bt);
+        if (aHas && bHas && at !== bt) return at - bt;
+        const ai = typeof a.id === "number" ? a.id : Number(String(a.id ?? "").replace(/\D/g, ""));
+        const bi = typeof b.id === "number" ? b.id : Number(String(b.id ?? "").replace(/\D/g, ""));
+        if (Number.isFinite(ai) && Number.isFinite(bi) && ai !== bi) return ai - bi;
+        return 0;
+      });
 
     return applyManualOrder(defaultSorted, manualOrderIds);
   }, [uiLogs, selectedDate, searchTerm, region, manualOrderIds]);
