@@ -144,6 +144,7 @@ function toUiLog(order) {
     bol: cleanBolForUi(order.bol_number ?? order.bol ?? ""),
     item: (order.item ?? order.item_description ?? order.item_desc ?? order.item_info ?? order.items ?? order.item_name ?? order.item_text ?? order.itemText ?? order.load_item ?? order.loadItem ?? order.product ?? order.description ?? ""),
     delivered_by: order.driver_name ?? order.delivered_by ?? "",
+    carryOver: order._carryOver ?? false
   };
 }
 
@@ -364,7 +365,8 @@ export default function DispatchLog() {
           ...row,
           date: selectedDate,
           delivered_by: "",
-          bol: row.bol || ""
+          bol: row.bol || "",
+          _carryOver: true
         };
 
         await createMutation.mutateAsync(newRow);
@@ -400,6 +402,10 @@ export default function DispatchLog() {
     const defaultSorted = filtered
       .slice()
       .sort((a, b) => {
+
+        // NEW: push carry-over BELOW new rows (only matters inside same group)
+        if (a.carryOver !== b.carryOver) return a.carryOver ? 1 : -1;
+
         const aBol = hasRealBol(a);
         const bBol = hasRealBol(b);
         if (aBol !== bBol) return aBol ? -1 : 1;
@@ -409,6 +415,7 @@ export default function DispatchLog() {
         const aHas = Number.isFinite(at);
         const bHas = Number.isFinite(bt);
         if (aHas && bHas && at !== bt) return at - bt;
+
         const ai = typeof a.id === "number" ? a.id : Number(String(a.id ?? "").replace(/\D/g, ""));
         const bi = typeof b.id === "number" ? b.id : Number(String(b.id ?? "").replace(/\D/g, ""));
         if (Number.isFinite(ai) && Number.isFinite(bi) && ai !== bi) return ai - bi;
