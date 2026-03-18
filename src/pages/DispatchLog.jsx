@@ -416,7 +416,18 @@ export default function DispatchLog() {
         // 2) Within SAME group → push carry-over DOWN
         if (a.carryOver !== b.carryOver) return a.carryOver ? 1 : -1;
 
-        // 3) Keep stable order (created_at)
+        // 3) If BOTH have NO BOL → group by company
+        if (!aBol && !bBol) {
+          const compA = String(a.company || "").toLowerCase();
+          const compB = String(b.company || "").toLowerCase();
+
+          if (compA !== compB) return compA.localeCompare(compB);
+
+          // SAME company → now handle carry-over
+          if (a.carryOver !== b.carryOver) return a.carryOver ? 1 : -1;
+        }
+
+        // 4) Keep stable order (created_at)
         const at = a.created_at ? new Date(a.created_at).getTime() : NaN;
         const bt = b.created_at ? new Date(b.created_at).getTime() : NaN;
 
