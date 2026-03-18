@@ -399,26 +399,41 @@ export default function DispatchLog() {
     // 1) Rows WITH a real BOL stay together (top section)
     // 2) Rows WITHOUT a real BOL stay together (bottom section)
     // 3) Within each section, keep the order stable by created_at (or id as fallback)
-    const defaultSorted = filtered
+    const defaultSorted = filtered 
       .slice()
       .sort((a, b) => {
 
-        // NEW: push carry-over BELOW new rows (only matters inside same group)
-        if (a.carryOver !== b.carryOver) return a.carryOver ? 1 : -1;
-
         const aBol = hasRealBol(a);
         const bBol = hasRealBol(b);
+
+        // 1) BOL grouping FIRST (this is the key fix)
         if (aBol !== bBol) return aBol ? -1 : 1;
 
+        // 2) Within SAME group → push carry-over DOWN
+        if (a.carryOver !== b.carryOver) return a.carryOver ? 1 : -1;
+
+        // 3) Keep stable order (created_at)
         const at = a.created_at ? new Date(a.created_at).getTime() : NaN;
         const bt = b.created_at ? new Date(b.created_at).getTime() : NaN;
+
         const aHas = Number.isFinite(at);
         const bHas = Number.isFinite(bt);
+
         if (aHas && bHas && at !== bt) return at - bt;
 
-        const ai = typeof a.id === "number" ? a.id : Number(String(a.id ?? "").replace(/\D/g, ""));
-        const bi = typeof b.id === "number" ? b.id : Number(String(b.id ?? "").replace(/\D/g, ""));
-        if (Number.isFinite(ai) && Number.isFinite(bi) && ai !== bi) return ai - bi;
+        // 4) fallback to id
+        const ai = typeof a.id === "number"
+          ? a.id
+          : Number(String(a.id ?? "").replace(/\D/g, ""));
+
+        const bi = typeof b.id === "number"
+          ? b.id
+          : Number(String(b.id ?? "").replace(/\D/g, ""));
+
+        if (Number.isFinite(ai) && Number.isFinite(bi) && ai !== bi) {
+          return ai - bi;
+        }
+
         return 0;
       });
 
