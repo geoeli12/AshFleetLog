@@ -290,12 +290,6 @@ export default function DispatchLog() {
 
   const uiLogs = useMemo(() => unwrapListResult(rawOrders).map(toUiLog), [rawOrders]);
 
-  React.useEffect(() => {
-    if (!uiLogs?.length) return;
-
-    duplicateUnfinishedOrders();
-  }, [selectedDate, region, uiLogs]);
-
   const createMutation = useMutation({
     mutationFn: async (uiData) => api.entities.DispatchOrder.create(toDbPayload(uiData)),
     onSuccess: (created, variables) => {
@@ -327,29 +321,37 @@ export default function DispatchLog() {
     onError: (e) => toast.error(e?.message || "Failed to delete entry"),
   });
 
-  // Duplicate unfinished loads forward until dispatched
-  const duplicateUnfinishedOrders = async () => {
+  // Manually check and bring forward unfinished orders
+  const checkPreviousDayOrders = async () => {
     try {
       const selected = parseYMDToLocalDate(selectedDate);
 
       const unfinished = uiLogs.filter((log) => {
         const delivered = String(log.delivered_by ?? "").trim().toLowerCase();
 
+        // Only NOT delivered
         if (delivered && delivered !== "no") return false;
 
         const logDate = parseYMDToLocalDate(log.date);
+        const prevDay = subDays(selected, 1);
 
         return (
-          logDate < selected &&
+          logDate.getFullYear() === prevDay.getFullYear() &&
+          logDate.getMonth() === prevDay.getMonth() &&
+          logDate.getDate() === prevDay.getDate() &&
           String(log.region || "").toUpperCase() === String(region).toUpperCase()
         );
       });
 
-      if (!unfinished.length) return;
+      if (!unfinished.length) {
+        toast.info("No unfinished orders from previous days");
+        return;
+      }
+
+      let createdCount = 0;
 
       for (const row of unfinished) {
 
-        // prevent duplicate storms on refresh
         const alreadyExists = uiLogs.some((log) => {
           return (
             toYMD(log.date) === selectedDate &&
@@ -370,11 +372,13 @@ export default function DispatchLog() {
         };
 
         await createMutation.mutateAsync(newRow);
+        createdCount++;
       }
 
-      toast.success(`${unfinished.length} unfinished orders duplicated`);
+      toast.success(`${createdCount} orders carried over`);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to check previous day orders");
     }
   };
 
@@ -475,7 +479,22 @@ export default function DispatchLog() {
                   Load History
                 </Button>
               </Link>
-              <Button variant="outline" size="icon" onClick={() => refetch()} className="rounded-xl">
+
+              {/* NEW BUTTON */}
+              <Button
+                variant="outline"
+                onClick={checkPreviousDayOrders}
+                className="rounded-xl"
+              >
+                Check Previous Day Orders
+              </Button>
+
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => refetch()}
+                className="rounded-xl"
+              >
                 <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
               </Button>
             </div>
