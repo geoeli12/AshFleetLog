@@ -503,21 +503,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="mt-5 grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
-              <StatPill label="Today" value={counts.todayCount} className="md:col-span-1" />
-              <StatPill
-                label="Remaining (no driver)"
-                value={counts.remainNoDriver}
-                className="md:col-span-1"
-              />
-              <StatPill label="This week" value={counts.weekCount} className="md:col-span-1" />
-              <StatPill
-                label="Remaining (week)"
-                value={counts.weekRemainingNoDriver}
-                className="md:col-span-1"
-              />
-              <StatPill label="This month" value={counts.monthCount} className="md:col-span-1" />
-            </div>
           </div>
         </div>
 
@@ -527,10 +512,11 @@ export default function Dashboard() {
             subtitle="Your daily workflow — shift log, schedule, dispatch, and fuel."
           >
             <div className="flex flex-col lg:flex-row gap-6">
-              
+
               {/* LEFT SIDEBAR */}
               <div className="lg:w-72 w-full">
-                <div className="rounded-2xl p-3 backdrop-blur-xl ring-1 shadow-md"
+                <div
+                  className="rounded-2xl p-3 backdrop-blur-xl ring-1 shadow-md"
                   style={{
                     backgroundColor: "var(--dash-tile-bg)",
                     borderColor: "var(--dash-tile-ring)",
@@ -548,7 +534,7 @@ export default function Dashboard() {
                             "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all",
                             location.pathname === item.to
                               ? "bg-amber-400 text-black"
-                              : "text-white/80 hover:bg-white/10"
+                              : "text-white/80 hover:bg-white/10",
                           ].join(" ")}
                         >
                           <Icon className="h-4 w-4 shrink-0" />
@@ -560,6 +546,25 @@ export default function Dashboard() {
                     })}
                   </div>
                 </div>
+              </div>
+
+              {/* RIGHT CONTENT (STATS MOVED HERE) */}
+              <div className="flex-1">
+
+                {/* STAT PILLS */}
+                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
+                  <StatPill label="Today" value={counts.todayCount} />
+                  <StatPill label="Remaining (no driver)" value={counts.remainNoDriver} />
+                  <StatPill label="This week" value={counts.weekCount} />
+                  <StatPill label="Remaining (week)" value={counts.weekRemainingNoDriver} />
+                  <StatPill label="This month" value={counts.monthCount} />
+                </div>
+
+                {/* OPTIONAL: future content area */}
+                <div className="mt-6 text-sm text-slate-600">
+                  Select a page from the left to get started.
+                </div>
+
               </div>
 
             </div>
