@@ -310,6 +310,7 @@ export default function Dashboard() {
     let todayCount = 0;
     let remainNoDriver = 0;
     let weekCount = 0;
+    let weekRemainingNoDriver = 0;
     let monthCount = 0;
 
     for (const o of orders) {
@@ -334,11 +335,14 @@ export default function Dashboard() {
         todayCount += 1;
         if (!drv) remainNoDriver += 1;
       }
-      if (inWeek) weekCount += 1;
+      if (inWeek) {
+        weekCount += 1;
+        if (!drv) weekRemainingNoDriver += 1;
+      }
       if (inMonth) monthCount += 1;
     }
 
-    return { todayCount, remainNoDriver, weekCount, monthCount };
+    return { todayCount, remainNoDriver, weekCount, weekRemainingNoDriver, monthCount };
   }, [dispatchQuery.data]);
 
   // Theme controls (so you don't have to edit code)
@@ -497,7 +501,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            <div className="mt-5 grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
               <StatPill label="Today" value={counts.todayCount} className="md:col-span-1" />
               <StatPill
                 label="Remaining (no driver)"
@@ -505,6 +509,11 @@ export default function Dashboard() {
                 className="md:col-span-1"
               />
               <StatPill label="This week" value={counts.weekCount} className="md:col-span-1" />
+              <StatPill
+                label="Remaining (week)"
+                value={counts.weekRemainingNoDriver}
+                className="md:col-span-1"
+              />
               <StatPill label="This month" value={counts.monthCount} className="md:col-span-1" />
             </div>
           </div>
