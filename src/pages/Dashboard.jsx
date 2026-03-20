@@ -289,6 +289,8 @@ export default function Dashboard() {
     },
   ];
 
+  const [activeTab, setActiveTab] = useState(primary[0]);
+
   const dispatchQuery = useQuery({
     queryKey: ["dispatchOrders"],
     queryFn: async () => {
@@ -524,17 +526,83 @@ export default function Dashboard() {
             title="Main Pages"
             subtitle="Your daily workflow — shift log, schedule, dispatch, and fuel."
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {primary.map((x) => (
-                <Tile
-                  key={x.name}
-                  to={x.to}
-                  icon={x.icon}
-                  title={x.name}
-                  description={x.description}
-                  pill={x.pill}
-                />
-              ))}
+            <div className="flex flex-col lg:flex-row gap-6">
+              
+              {/* LEFT SIDEBAR */}
+              <div className="lg:w-72 w-full">
+                <div className="rounded-2xl p-3 backdrop-blur-xl ring-1 shadow-md"
+                  style={{
+                    backgroundColor: "var(--dash-tile-bg)",
+                    borderColor: "var(--dash-tile-ring)",
+                  }}
+                >
+                  <div className="space-y-1">
+                    {primary.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = activeTab.name === item.name;
+
+                      return (
+                        <button
+                          key={item.name}
+                          onClick={() => setActiveTab(item)}
+                          className={[
+                            "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all",
+                            isActive
+                              ? "bg-amber-400 text-black"
+                              : "text-white/80 hover:bg-white/10"
+                          ].join(" ")}
+                        >
+                          <Icon className="h-4 w-4 shrink-0" />
+                          <span className="text-sm font-medium truncate">
+                            {item.name}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* RIGHT CONTENT PANEL */}
+              <div className="flex-1">
+                <div
+                  className="rounded-3xl p-6 backdrop-blur-xl ring-1 shadow-[0_18px_60px_-28px_rgba(0,0,0,0.45)]"
+                  style={{
+                    backgroundColor: "var(--dash-tile-bg)",
+                    borderColor: "var(--dash-tile-ring)",
+                  }}
+                >
+                  <div className="flex items-start gap-4">
+                    
+                    <div className="grid place-items-center h-12 w-12 rounded-2xl bg-white/10 ring-1 ring-white/10">
+                      {(() => {
+                        const Icon = activeTab.icon;
+                        return <Icon className="h-6 w-6 text-amber-300" />;
+                      })()}
+                    </div>
+
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold text-white">
+                        {activeTab.name}
+                      </h3>
+
+                      <p className="mt-1 text-sm text-white/70">
+                        {activeTab.description}
+                      </p>
+
+                      <Link
+                        to={activeTab.to}
+                        className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-xl bg-amber-400 text-black font-medium hover:bg-amber-300 transition"
+                      >
+                        Open Page
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+
             </div>
           </Section>
 
