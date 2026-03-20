@@ -40,14 +40,7 @@ export default function Sidebar() {
   ];
 
   return (
-    <div
-      className="lg:w-56 w-full shrink-0"
-      style={{
-        // ADD THIS (same as Dashboard)
-        ["--dash-tile-bg"]: "rgba(2, 6, 23, 0.78)",
-        ["--dash-tile-ring"]: "rgba(255,255,255,0.10)",
-      }}
-    >
+    <div className="lg:w-56 w-full shrink-0">
       <div
         className="relative rounded-2xl p-3 backdrop-blur-xl ring-1 shadow-md"
         style={{
@@ -72,7 +65,7 @@ export default function Sidebar() {
                   "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all",
                   isActive
                     ? "bg-amber-400 text-black"
-                    : "text-white/80 hover:bg-white/10",
+                    : "text-black hover:bg-black/5",
                 ].join(" ")}
               >
                 <Icon className="h-4 w-4 shrink-0" />
