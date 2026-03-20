@@ -5,6 +5,7 @@ import { api } from "@/api/apiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import {
+  LayoutGrid,
   ClipboardList,
   History,
   CalendarDays,
@@ -329,7 +330,11 @@ export default function Dashboard() {
       </div>
 
       <div className="w-full px-4 sm:px-6 py-8">
-        <div className="flex items-start">
+
+        <div className="flex items-start gap-4">
+          <div className="mt-1 h-12 w-12 shrink-0 rounded-2xl bg-black/75 backdrop-blur-xl ring-1 ring-black/15 grid place-items-center shadow-[0_18px_60px_-30px_rgba(0,0,0,0.45)]">
+            <LayoutGrid className="h-6 w-6 text-amber-300" />
+          </div>
 
           <div className="flex-1" />
 
