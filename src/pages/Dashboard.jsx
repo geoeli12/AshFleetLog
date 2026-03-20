@@ -5,7 +5,6 @@ import { api } from "@/api/apiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import {
-  LayoutGrid,
   ClipboardList,
   History,
   CalendarDays,
@@ -19,7 +18,6 @@ import {
   
   FileText,
   ArrowRight,
-  Palette,
 } from "lucide-react";
 import {
   endOfMonth,
@@ -30,16 +28,8 @@ import {
   startOfWeek,
 } from "date-fns";
 
-const Section = ({ title, subtitle, children }) => (
+const Section = ({ children }) => (
   <section className="space-y-4">
-    <div className="flex items-end justify-between gap-4">
-      <div className="min-w-0">
-        <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-slate-900">
-          {title}
-        </h2>
-        {subtitle ? <p className="text-sm text-slate-600">{subtitle}</p> : null}
-      </div>
-    </div>
     {children}
   </section>
 );
@@ -149,37 +139,6 @@ function safeParseISO(d) {
 function dateOnlyLocal(dt) {
   if (!dt) return null;
   return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
-}
-
-const THEME_STORAGE_KEY = "apm_dashboard_theme_v1";
-const COLOR_STORAGE_KEY = "apm_dashboard_colors_v1";
-
-const PRESET_THEMES = [
-  {
-    id: "warm",
-    name: "Warm",
-    bg: "#F3EFE7",
-    tileBg: "rgba(2, 6, 23, 0.78)", // slate-950-ish
-    tileRing: "rgba(255,255,255,0.10)",
-  },
-  {
-    id: "midnight",
-    name: "Midnight",
-    bg: "#061328",
-    tileBg: "rgba(255,255,255,0.07)",
-    tileRing: "rgba(255,255,255,0.12)",
-  },
-  {
-    id: "slate",
-    name: "Slate",
-    bg: "#0B1220",
-    tileBg: "rgba(2, 6, 23, 0.72)",
-    tileRing: "rgba(255,255,255,0.10)",
-  },
-];
-
-function getPresetById(id) {
-  return PRESET_THEMES.find((t) => t.id === id) || PRESET_THEMES[0];
 }
 
 export default function Dashboard() {
@@ -347,59 +306,14 @@ export default function Dashboard() {
     return { todayCount, remainNoDriver, weekCount, weekRemainingNoDriver, monthCount };
   }, [dispatchQuery.data]);
 
-  // Theme controls (so you don't have to edit code)
-  const [themeId, setThemeId] = useState(() => {
-    try {
-      const saved = localStorage.getItem(THEME_STORAGE_KEY);
-      return saved || "warm";
-    } catch {
-      return "warm";
-    }
-  });
-
-  // Optional custom colors (color pickers)
-  const [custom, setCustom] = useState(() => {
-    try {
-      const raw = localStorage.getItem(COLOR_STORAGE_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
-  });
-
-  const theme = useMemo(() => getPresetById(themeId), [themeId]);
-
-  const effective = useMemo(() => {
-    if (!custom) return theme;
-    return {
-      ...theme,
-      bg: custom.bg || theme.bg,
-      tileBg: custom.tileBg || theme.tileBg,
-      tileRing: custom.tileRing || theme.tileRing,
-    };
-  }, [theme, custom]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(THEME_STORAGE_KEY, themeId);
-    } catch {}
-  }, [themeId]);
-
-  useEffect(() => {
-    try {
-      if (custom) localStorage.setItem(COLOR_STORAGE_KEY, JSON.stringify(custom));
-      else localStorage.removeItem(COLOR_STORAGE_KEY);
-    } catch {}
-  }, [custom]);
-
   return (
     <div
       className="min-h-screen"
       style={{
-        backgroundColor: effective.bg,
+        backgroundColor: "#F3EFE7",
         // These variables control the tile/stat pill colors ONLY on this page
-        ["--dash-tile-bg"]: effective.tileBg,
-        ["--dash-tile-ring"]: effective.tileRing,
+        ["--dash-tile-bg"]: "rgba(2, 6, 23, 0.78)",
+        ["--dash-tile-ring"]: "rgba(255,255,255,0.10)",
       }}
     >
       {/* Background effects (kept subtle so tiles stay readable) */}
@@ -420,97 +334,12 @@ export default function Dashboard() {
             <LayoutGrid className="h-6 w-6 text-amber-300" />
           </div>
 
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0">
-                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-950">
-                  Transport Dash
-                </h1>
-                <p className="mt-1 text-sm text-slate-700">
-                  Pick where you want to go — everything is one click away.
-                </p>
-              </div>
+          <div className="flex-1" />
 
-              {/* Theme controls (local only, saved in browser) */}
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="flex items-center gap-2 rounded-2xl bg-white/70 backdrop-blur ring-1 ring-black/10 px-3 py-2 shadow-sm">
-                  <Palette className="h-4 w-4 text-slate-700" />
-                  <label className="text-xs font-medium text-slate-700">Theme</label>
-                  <select
-                    value={themeId}
-                    onChange={(e) => {
-                      setThemeId(e.target.value);
-                      // switching presets keeps your custom overrides if you set them; if you want presets to fully override, clear custom here.
-                    }}
-                    className="ml-1 rounded-lg bg-white/80 px-2 py-1 text-xs text-slate-800 ring-1 ring-black/10 focus:outline-none focus:ring-2 focus:ring-amber-400/60"
-                  >
-                    {PRESET_THEMES.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <details className="group">
-                  <summary className="cursor-pointer list-none rounded-2xl bg-white/70 backdrop-blur ring-1 ring-black/10 px-3 py-2 text-xs font-medium text-slate-700 shadow-sm hover:bg-white/80">
-                    Colors
-                  </summary>
-                  <div className="mt-2 grid gap-2 rounded-2xl bg-white/80 backdrop-blur ring-1 ring-black/10 p-3 shadow-sm">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="text-xs text-slate-700">Background</div>
-                      <input
-                        type="color"
-                        value={(custom?.bg || effective.bg) ?? "#ffffff"}
-                        onChange={(e) => setCustom((p) => ({ ...(p || {}), bg: e.target.value }))}
-                        className="h-7 w-10 rounded-md border border-black/10 bg-transparent"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="text-xs text-slate-700">Tile</div>
-                      <input
-                        type="color"
-                        value={(custom?.tileBg || effective.tileBg) ?? "#000000"}
-                        onChange={(e) =>
-                          setCustom((p) => ({ ...(p || {}), tileBg: e.target.value }))
-                        }
-                        className="h-7 w-10 rounded-md border border-black/10 bg-transparent"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="text-xs text-slate-700">Tile ring</div>
-                      <input
-                        type="color"
-                        value={(custom?.tileRing || effective.tileRing) ?? "#ffffff"}
-                        onChange={(e) =>
-                          setCustom((p) => ({ ...(p || {}), tileRing: e.target.value }))
-                        }
-                        className="h-7 w-10 rounded-md border border-black/10 bg-transparent"
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-end gap-2 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => setCustom(null)}
-                        className="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-slate-800"
-                      >
-                        Reset
-                      </button>
-                    </div>
-                  </div>
-                </details>
-              </div>
-            </div>
-
-          </div>
         </div>
 
         <div className="mt-10 space-y-10">
-          <Section
-            title="Main Pages"
-            subtitle="Your daily workflow — shift log, schedule, dispatch, and fuel."
-          >
+          <Section>
             <div className="flex flex-col lg:flex-row gap-6">
 
               {/* LEFT SIDEBAR */}
