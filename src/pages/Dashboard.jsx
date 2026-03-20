@@ -327,8 +327,8 @@ export default function Dashboard() {
         <div className="absolute inset-0 opacity-[0.05] [background-image:radial-gradient(rgba(0,0,0,0.22)_1px,transparent_1px)] [background-size:24px_24px]" />
       </div>
 
-      <div className="w-full px-4 sm:px-6 py-8">
-        <div className="mt-10 space-y-10">
+      <div className="w-full px-4 sm:px-6 py-3">
+        <div className="mt-2 space-y-6">
           <Section>
             <div className="flex flex-col lg:flex-row gap-6">
 
