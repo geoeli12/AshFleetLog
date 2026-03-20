@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
@@ -13,16 +13,11 @@ import {
   Gauge,
   Package,
   FileText,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 
 export default function Sidebar() {
 
   const location = useLocation();
-
-  // ADDED (state only — no logic removed)
-  const [collapsed, setCollapsed] = useState(false);
 
   const primary = [
     { name: "Driver Logs", to: createPageUrl("DriverLog"), icon: ClipboardList },
@@ -46,11 +41,12 @@ export default function Sidebar() {
 
   return (
     <div
-      className={[
-        "lg:w-56 w-full shrink-0",
-        "transition-all duration-300",
-        collapsed ? "lg:w-16" : "lg:w-56",
-      ].join(" ")}
+      className="lg:w-56 w-full shrink-0"
+      style={{
+        // ADD THIS (same as Dashboard)
+        ["--dash-tile-bg"]: "rgba(2, 6, 23, 0.78)",
+        ["--dash-tile-ring"]: "rgba(255,255,255,0.10)",
+      }}
     >
       <div
         className="relative rounded-2xl p-3 backdrop-blur-xl ring-1 shadow-md"
@@ -59,18 +55,6 @@ export default function Sidebar() {
           borderColor: "var(--dash-tile-ring)",
         }}
       >
-
-        {/* ADDED TOGGLE BUTTON (nothing removed) */}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="absolute -right-3 top-4 bg-amber-400 text-black rounded-full p-1 shadow-md"
-        >
-          {collapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <ChevronLeft className="h-4 w-4" />
-          )}
-        </button>
 
         <div className="space-y-1">
           {primary.map((item) => {
@@ -86,7 +70,6 @@ export default function Sidebar() {
                 to={item.to}
                 className={[
                   "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all",
-                  collapsed ? "justify-center" : "",
                   isActive
                     ? "bg-amber-400 text-black"
                     : "text-white/80 hover:bg-white/10",
@@ -94,12 +77,9 @@ export default function Sidebar() {
               >
                 <Icon className="h-4 w-4 shrink-0" />
 
-                {/* ONLY HIDE TEXT (logic untouched) */}
-                {!collapsed && (
-                  <span className="text-sm font-medium truncate">
-                    {item.name}
-                  </span>
-                )}
+                <span className="text-sm font-medium truncate">
+                  {item.name}
+                </span>
               </Link>
             );
           })}
