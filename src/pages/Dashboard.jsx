@@ -5,7 +5,6 @@ import { api } from "@/api/apiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import {
-  LayoutGrid,
   ClipboardList,
   History,
   CalendarDays,
@@ -317,7 +316,6 @@ export default function Dashboard() {
         ["--dash-tile-ring"]: "rgba(255,255,255,0.10)",
       }}
     >
-      {/* Background effects (kept subtle so tiles stay readable) */}
       <div className="pointer-events-none fixed inset-0 -z-10">
         <div
           className="absolute inset-0"
@@ -330,22 +328,12 @@ export default function Dashboard() {
       </div>
 
       <div className="w-full px-4 sm:px-6 py-8">
-
-        <div className="flex items-start gap-4">
-          <div className="mt-1 h-12 w-12 shrink-0 rounded-2xl bg-black/75 backdrop-blur-xl ring-1 ring-black/15 grid place-items-center shadow-[0_18px_60px_-30px_rgba(0,0,0,0.45)]">
-            <LayoutGrid className="h-6 w-6 text-amber-300" />
-          </div>
-
-          <div className="flex-1" />
-
-        </div>
-
         <div className="mt-10 space-y-10">
           <Section>
             <div className="flex flex-col lg:flex-row gap-6">
 
-              {/* LEFT SIDEBAR */}
-              <div className="lg:w-72 w-full">
+              {/* LEFT SIDEBAR (NARROWER) */}
+              <div className="lg:w-56 w-full">
                 <div
                   className="rounded-2xl p-3 backdrop-blur-xl ring-1 shadow-md"
                   style={{
@@ -379,7 +367,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* RIGHT CONTENT (STATS MOVED HERE) */}
+              {/* RIGHT CONTENT */}
               <div className="flex-1">
 
                 {/* STAT PILLS */}
@@ -391,19 +379,10 @@ export default function Dashboard() {
                   <StatPill label="This month" value={counts.monthCount} />
                 </div>
 
-                {/* OPTIONAL: future content area */}
-                <div className="mt-6 text-sm text-slate-600">
-                  Select a page from the left to get started.
-                </div>
-
               </div>
 
             </div>
           </Section>
-
-          <div className="pb-6 text-xs text-slate-600">
-            Tip: this is your home base — use the Back buttons to return here fast.
-          </div>
         </div>
       </div>
     </div>
