@@ -42,7 +42,6 @@ export default function Sidebar() {
     { name: "Invoice", to: createPageUrl("Invoice"), icon: FileText },
   ];
 
-  // 🔥 REAL AUTO FIT LOGIC
   useEffect(() => {
     const resize = () => {
       if (!containerRef.current || !contentRef.current) return;
@@ -90,10 +89,11 @@ export default function Sidebar() {
                   key={item.name}
                   to={item.to}
                   className={[
-                    "w-full flex items-center gap-3 px-3 py-2 transition-all",
+                    "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all border",
+                    
                     isActive
-                      ? "bg-amber-400 text-black"
-                      : "text-black hover:bg-black/5",
+                      ? "bg-amber-400 text-black border-amber-500"
+                      : "text-black border-black/10 hover:bg-black/5 hover:border-black/20",
                   ].join(" ")}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
