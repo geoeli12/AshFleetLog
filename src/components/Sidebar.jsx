@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
@@ -17,6 +17,10 @@ import {
 
 export default function Sidebar() {
   const location = useLocation();
+
+  const containerRef = useRef(null);
+  const contentRef = useRef(null);
+  const [scale, setScale] = useState(1);
 
   const primary = [
     { name: "Driver Logs", to: createPageUrl("DriverLog"), icon: ClipboardList },
@@ -38,50 +42,67 @@ export default function Sidebar() {
     { name: "Invoice", to: createPageUrl("Invoice"), icon: FileText },
   ];
 
+  // 🔥 REAL AUTO FIT LOGIC
+  useEffect(() => {
+    const resize = () => {
+      if (!containerRef.current || !contentRef.current) return;
+
+      const containerHeight = containerRef.current.offsetHeight;
+      const contentHeight = contentRef.current.scrollHeight;
+
+      const newScale = Math.min(1, containerHeight / contentHeight);
+      setScale(newScale);
+    };
+
+    resize();
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, []);
+
   return (
     <div className="fixed top-[72px] left-0 h-[calc(100vh-72px)] w-56">
       <div
-        className="h-full p-3 ring-1 shadow-md flex flex-col overflow-hidden"
+        ref={containerRef}
+        className="h-full p-3 ring-1 shadow-md overflow-hidden"
         style={{
           backgroundColor: "var(--dash-tile-bg)",
           borderColor: "var(--dash-tile-ring)",
         }}
       >
-        {/* AUTO SCALE CONTAINER */}
-        <div className="flex-1 overflow-hidden">
-          <div
-            className="origin-top-left"
-            style={{
-              transform: "scale(calc(min(1, 100vh / 900)))",
-            }}
-          >
-            <div className="space-y-1">
-              {primary.map((item) => {
-                const Icon = item.icon;
+        <div
+          ref={contentRef}
+          style={{
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+            width: scale < 1 ? `${100 / scale}%` : "100%",
+          }}
+        >
+          <div className="space-y-1">
+            {primary.map((item) => {
+              const Icon = item.icon;
 
-                const isActive =
-                  location.pathname === item.to ||
-                  location.pathname.startsWith(item.to + "/");
+              const isActive =
+                location.pathname === item.to ||
+                location.pathname.startsWith(item.to + "/");
 
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.to}
-                    className={[
-                      "w-full flex items-center gap-3 px-3 py-2 transition-all",
-                      isActive
-                        ? "bg-amber-400 text-black"
-                        : "text-black hover:bg-black/5",
-                    ].join(" ")}
-                  >
-                    <Icon className="h-4 w-4 shrink-0" />
-                    <span className="text-sm font-medium truncate">
-                      {item.name}
-                    </span>
-                  </Link>
-                );
-              })}
-            </div>
+              return (
+                <Link
+                  key={item.name}
+                  to={item.to}
+                  className={[
+                    "w-full flex items-center gap-3 px-3 py-2 transition-all",
+                    isActive
+                      ? "bg-amber-400 text-black"
+                      : "text-black hover:bg-black/5",
+                  ].join(" ")}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span className="text-sm font-medium truncate">
+                    {item.name}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </div>
