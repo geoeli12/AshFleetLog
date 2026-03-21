@@ -40,16 +40,15 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="lg:w-56 w-full shrink-0">
+    <div className="lg:w-52 w-full shrink-0 h-screen overflow-hidden">
       <div
-        className="relative rounded-2xl p-3 backdrop-blur-xl ring-1 shadow-md"
+        className="relative p-2 backdrop-blur-xl ring-1 shadow-md h-full"
         style={{
           backgroundColor: "var(--dash-tile-bg)",
           borderColor: "var(--dash-tile-ring)",
         }}
       >
-
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           {primary.map((item) => {
             const Icon = item.icon;
 
@@ -62,22 +61,21 @@ export default function Sidebar() {
                 key={item.name}
                 to={item.to}
                 className={[
-                  "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all",
+                  "w-full flex items-center gap-2 px-2 py-1.5 text-left transition-all",
                   isActive
                     ? "bg-amber-400 text-black"
                     : "text-black hover:bg-black/5",
                 ].join(" ")}
               >
-                <Icon className="h-4 w-4 shrink-0" />
+                <Icon className="h-3.5 w-3.5 shrink-0" />
 
-                <span className="text-sm font-medium truncate">
+                <span className="text-xs font-medium truncate">
                   {item.name}
                 </span>
               </Link>
             );
           })}
         </div>
-
       </div>
     </div>
   );
