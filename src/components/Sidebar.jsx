@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 
 export default function Sidebar() {
-
   const location = useLocation();
 
   const primary = [
@@ -40,41 +39,50 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="lg:w-52 w-full shrink-0 h-screen overflow-hidden">
+    <div className="fixed top-0 left-0 h-screen w-56">
       <div
-        className="relative p-2 backdrop-blur-xl ring-1 shadow-md h-full"
+        className="h-full p-3 ring-1 shadow-md flex flex-col overflow-hidden"
         style={{
           backgroundColor: "var(--dash-tile-bg)",
           borderColor: "var(--dash-tile-ring)",
         }}
       >
-        <div className="space-y-0.5">
-          {primary.map((item) => {
-            const Icon = item.icon;
+        {/* AUTO SCALE CONTAINER */}
+        <div className="flex-1 overflow-hidden">
+          <div
+            className="origin-top-left"
+            style={{
+              transform: "scale(calc(min(1, 100vh / 900)))",
+            }}
+          >
+            <div className="space-y-1">
+              {primary.map((item) => {
+                const Icon = item.icon;
 
-            const isActive =
-              location.pathname === item.to ||
-              location.pathname.startsWith(item.to + "/");
+                const isActive =
+                  location.pathname === item.to ||
+                  location.pathname.startsWith(item.to + "/");
 
-            return (
-              <Link
-                key={item.name}
-                to={item.to}
-                className={[
-                  "w-full flex items-center gap-2 px-2 py-1.5 text-left transition-all",
-                  isActive
-                    ? "bg-amber-400 text-black"
-                    : "text-black hover:bg-black/5",
-                ].join(" ")}
-              >
-                <Icon className="h-3.5 w-3.5 shrink-0" />
-
-                <span className="text-xs font-medium truncate">
-                  {item.name}
-                </span>
-              </Link>
-            );
-          })}
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.to}
+                    className={[
+                      "w-full flex items-center gap-3 px-3 py-2 transition-all",
+                      isActive
+                        ? "bg-amber-400 text-black"
+                        : "text-black hover:bg-black/5",
+                    ].join(" ")}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    <span className="text-sm font-medium truncate">
+                      {item.name}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </div>
