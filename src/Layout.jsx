@@ -21,7 +21,7 @@ export default function Layout({ children, currentPageName }) {
   return (
     <div className="min-h-screen bg-amber-50 flex flex-col">
 
-      {/* HEADER */}
+      {/* HEADER (UNCHANGED — FULL WIDTH 👍) */}
       <header className="bg-neutral-900 text-white shadow-lg">
         <div className="w-full px-6 py-4 flex items-center justify-between">
           
@@ -51,15 +51,13 @@ export default function Layout({ children, currentPageName }) {
       </header>
 
       {/* BODY */}
-      <div className="flex flex-1 w-full overflow-hidden">
+      <div className="flex flex-1 w-full">
 
-        {/* SIDEBAR (fixed height + scroll) */}
-        <div className="h-[calc(100vh-72px)] overflow-y-auto">
-          <Sidebar />
-        </div>
+        {/* SIDEBAR (fixed — already positioned correctly) */}
+        <Sidebar />
 
-        {/* CONTENT (independent scroll) */}
-        <main className="flex-1 overflow-y-auto p-6">
+        {/* CONTENT (shifted right to avoid overlap) */}
+        <main className="flex-1 ml-56 p-6 overflow-y-auto">
           {children}
         </main>
 
