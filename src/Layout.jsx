@@ -19,10 +19,13 @@ export default function Layout({ children, currentPageName }) {
   const isDashboard = pageName === "Dashboard";
 
   return (
-    <div className="min-h-screen bg-amber-50 flex flex-col">
+    <div className="min-h-screen bg-amber-50">
+
+      {/* SIDEBAR (NOW FIXED, OUTSIDE LAYOUT FLOW) */}
+      <Sidebar />
 
       {/* HEADER */}
-      <header className="bg-neutral-900 text-white shadow-lg">
+      <header className="bg-neutral-900 text-white shadow-lg ml-56">
         <div className="w-full px-6 py-4 flex items-center justify-between">
           
           <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3 min-w-0">
@@ -50,20 +53,11 @@ export default function Layout({ children, currentPageName }) {
         </div>
       </header>
 
-      {/* BODY */}
-      <div className="flex flex-1 w-full overflow-hidden">
+      {/* CONTENT */}
+      <main className="ml-56 p-6">
+        {children}
+      </main>
 
-        {/* SIDEBAR (fixed height + scroll) */}
-        <div className="h-[calc(100vh-72px)] overflow-y-auto">
-          <Sidebar />
-        </div>
-
-        {/* CONTENT (independent scroll) */}
-        <main className="flex-1 overflow-y-auto p-6">
-          {children}
-        </main>
-
-      </div>
     </div>
   );
 }
