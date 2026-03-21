@@ -59,7 +59,7 @@ export default function Sidebar() {
   }, []);
 
   return (
-    <div className="fixed top-[72px] left-0 h-[calc(100vh-72px)] w-56">
+    <div className="fixed top-[68px] left-0 h-[calc(100vh-68px)] w-56">
       <div
         ref={containerRef}
         className="h-full p-3 ring-1 shadow-md overflow-hidden"
