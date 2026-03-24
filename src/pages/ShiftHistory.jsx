@@ -345,14 +345,16 @@ export default function ShiftHistory() {
 
     if (shiftsLoading) {
         return (
-            <div className="min-h-screen bg-gradient-to-b from-black/5 via-background to-background flex items-center justify-center">
+            <div className="flex items-center justify-center h-full">
+
                 <Loader2 className="h-8 w-8 animate-spin text-amber-300" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-black/5 via-background to-background">
+        <div className="w-full">
+
             <div className="max-w-5xl mx-auto px-4 py-8">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                     <div>
