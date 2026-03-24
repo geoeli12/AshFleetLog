@@ -93,7 +93,7 @@ export default function Sidebar() {
 
                     isActive
                       ? "bg-amber-400 text-black border-amber-500"
-                      : "bg-[#F3EFE7] text-black border-black/10 hover:bg-[#E7E1D6] hover:border-black/20",
+                      : "bg-amber-50 text-black border-black/10 hover:bg-amber-100 hover:border-black/20",
                   ].join(" ")}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
