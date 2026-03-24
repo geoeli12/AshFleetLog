@@ -89,8 +89,8 @@ export default function Sidebar() {
                   key={item.name}
                   to={item.to}
                   className={[
-                    "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all border",
-                    
+                    "w-full flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg transition-all border",
+
                     isActive
                       ? "bg-amber-400 text-black border-amber-500"
                       : "text-black border-black/10 hover:bg-black/5 hover:border-black/20",
