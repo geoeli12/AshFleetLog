@@ -64,8 +64,8 @@ export default function Sidebar() {
         ref={containerRef}
         className="h-full pt-1 pb-3 px-3 ring-1 shadow-md overflow-hidden"
         style={{
-          backgroundColor: "var(--dash-tile-bg)",
-          borderColor: "var(--dash-tile-ring)",
+          backgroundColor: "#000", // solid black sidebar
+          borderColor: "rgba(255,255,255,0.08)", // subtle border so it still looks clean
         }}
       >
         <div
@@ -93,7 +93,7 @@ export default function Sidebar() {
 
                     isActive
                       ? "bg-amber-400 text-black border-amber-500"
-                      : "text-black border-black/10 hover:bg-black/5 hover:border-black/20",
+                      : "bg-[var(--dash-tile-bg)] text-black border-black/10 hover:bg-[var(--dash-tile-bg)]/80",
                   ].join(" ")}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
