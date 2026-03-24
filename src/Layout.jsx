@@ -19,7 +19,7 @@ export default function Layout({ children, currentPageName }) {
   const isDashboard = pageName === "Dashboard";
 
   return (
-    <div className="min-h-screen bg-amber-50 flex flex-col">
+    <div className="min-h-screen flex flex-col">
 
       {/* HEADER (UNCHANGED — FULL WIDTH 👍) */}
       <header className="bg-neutral-900 text-white shadow-lg">
@@ -57,7 +57,7 @@ export default function Layout({ children, currentPageName }) {
         <Sidebar />
 
         {/* CONTENT (shifted right to avoid overlap) */}
-        <main className="flex-1 ml-56 p-6 overflow-y-auto">
+        <main className="flex-1 ml-56 p-6 overflow-y-auto bg-amber-50">
           {children}
         </main>
 
