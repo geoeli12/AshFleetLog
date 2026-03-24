@@ -276,8 +276,8 @@ export default function Schedule() {
   const driverOptions = region === "PA" ? paDrivers : ilDrivers;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black/5 via-background to-background">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="w-full">
+      <div className="px-6 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-light tracking-tight text-zinc-900">
             Schedule <span className="font-semibold">Planning</span>

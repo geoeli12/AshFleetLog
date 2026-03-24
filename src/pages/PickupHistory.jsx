@@ -144,10 +144,11 @@ export default function PickupHistory() {
   }, [filteredLogs]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+    <div className="w-full">
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
+
             <div className="flex items-center gap-3">
               <div className="bg-slate-800 p-2.5 rounded-xl">
                 <History className="h-6 w-6 text-white" />
@@ -157,6 +158,7 @@ export default function PickupHistory() {
                 <p className="text-sm text-slate-500">All pick up records</p>
               </div>
             </div>
+
             <div className="flex gap-2">
               <Link to={createPageUrl("PickUps")}>
                 <Button variant="outline" className="rounded-xl">
@@ -164,13 +166,20 @@ export default function PickupHistory() {
                   Back to Today
                 </Button>
               </Link>
-              <Button variant="outline" size="icon" onClick={() => refetch()} className="rounded-xl">
+
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => refetch()}
+                className="rounded-xl"
+              >
                 <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
               </Button>
             </div>
+
           </div>
         </div>
-      </header>
+      </div>
 
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-6">
         <div className="flex justify-between items-center">
