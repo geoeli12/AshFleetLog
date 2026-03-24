@@ -169,14 +169,14 @@ export default function DriverLog() {
 
     if (shiftsLoading || driversLoading) {
         return (
-            <div className="min-h-screen bg-gradient-to-b from-black/5 via-background to-background flex items-center justify-center">
+            <div className="flex items-center justify-center h-full">
                 <Loader2 className="h-8 w-8 animate-spin text-amber-700" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-black/5 via-background to-background">
+        <div className="w-full">
             <div className="max-w-2xl mx-auto px-4 py-8">
                 <div className="mb-8">
                     <h1 className="text-3xl font-light tracking-tight text-zinc-900">
