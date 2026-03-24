@@ -188,7 +188,6 @@ export default function Dashboard() {
     <div
       className="min-h-screen"
       style={{
-        backgroundColor: "#F3EFE7",
         ["--dash-tile-bg"]: "rgba(2, 6, 23, 0.78)",
         ["--dash-tile-ring"]: "rgba(255,255,255,0.10)",
       }}
