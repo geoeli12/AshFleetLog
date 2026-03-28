@@ -174,8 +174,8 @@ const createMutation = useMutation({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-6">
-      <div className="max-w-full mx-auto space-y-6">
+    <div className="w-full">
+      <div className="px-6 py-8 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-slate-800">Pallet Inventory Entry</h1>

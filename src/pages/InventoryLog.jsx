@@ -251,8 +251,8 @@ export default function InventoryLogPage() {
   }, {});
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-6">
-      <div className="max-w-full mx-auto space-y-6">
+    <div className="w-full">
+      <div className="px-6 py-8 space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
