@@ -314,8 +314,8 @@ export default function Calendar() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50/50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="w-full">
+      <div className="px-6 py-8">
         <AttendanceCalendar attendance={attendance} employees={employees} onDayClick={handleDayClick} />
 
         <DayDetailModal

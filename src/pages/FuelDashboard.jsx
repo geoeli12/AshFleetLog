@@ -84,7 +84,7 @@ export default function FuelDashboard() {
   const totalUsage = readings.reduce((sum, r) => sum + (r.gallons_used || 0), 0);
   const totalRefills = refills.reduce((sum, r) => sum + (r.gallons_added || 0), 0);
 
-  // ✅ PA-only active drivers (matches your AddReading filter logic)
+  // PA-only active drivers (matches your AddReading filter logic)
   const paActiveDriversCount = drivers.filter(d =>
     d &&
     d.active !== false &&
@@ -99,8 +99,8 @@ export default function FuelDashboard() {
   ].sort((a, b) => new Date(b.sortDate) - new Date(a.sortDate)).slice(0, 10);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <div className="w-full">
+      <div className="px-6 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
