@@ -88,15 +88,27 @@ export default function DriverLog() {
         mutationFn: (data) => {
             const attendanceStatus = computeAttendanceStatus(data.shift_type, data.start_time);
 
-            // Normalize keys to match server allowed columns
             const payload = {
-                ...data,
-                shift_date: data.shift_date ?? data.date,
-                start_odometer: data.start_odometer ?? data.starting_odometer,
+                driver_name: data.driver_name,
+                unit_number: data.unit_number,
+                shift_type: data.shift_type,
+                shift_date: data.shift_date,
+
+                start_time: data.start_time,
+
+                // ✅ USE ONLY ONE FIELD (MATCH YOUR TABLE)
+                start_odometer: parseInt(data.start_odometer),
+
                 attendance_status: attendanceStatus,
+                status: "active",
+
+                // ✅ LOCATION DATA (THIS IS WHAT YOU CARE ABOUT)
+                start_lat: data.start_lat,
+                start_lng: data.start_lng,
+                start_address: data.start_address,
+                outside_location: data.outside_location,
+                outside_reason: data.outside_reason
             };
-            delete payload.date;
-            delete payload.starting_odometer;
 
             return api.entities.Shift.create(payload);
         },
@@ -192,8 +204,11 @@ export default function DriverLog() {
                             <User className="h-4 w-4" /> Select Driver
                         </Label>
                         <Select value={selectedDriver} onValueChange={setSelectedDriver}>
-                            <SelectTrigger className="h-11 border-slate-200 rounded-xl">
-                                <SelectValue placeholder="Select your name to begin" />
+                            <SelectTrigger className="h-11 border-slate-200 rounded-xl bg-white text-slate-800">
+                                <SelectValue
+                                    placeholder="Select your name to begin"
+                                    className="text-slate-500"
+                                />
                             </SelectTrigger>
                             <SelectContent>
                                 {drivers.map((driver) => (
