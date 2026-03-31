@@ -28,7 +28,8 @@ export default function StartShiftForm({ onSubmit, onPTO, onCancel, isLoading, d
 
     const MAIN_LOCATIONS = [
         { lat: 42.3835, lng: -88.0956 },
-        { lat: 42.4770, lng: -88.0950 }
+        { lat: 42.4770, lng: -88.0950 },
+        { lat: 42.3636, lng: -87.8448 } // 🔥 NEW LOCATION
     ];
 
     const getDistance = (lat1, lon1, lat2, lon2) => {
