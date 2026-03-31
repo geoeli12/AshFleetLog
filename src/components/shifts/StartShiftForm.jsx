@@ -44,6 +44,41 @@ export default function StartShiftForm({ onSubmit, onPTO, isLoading, drivers = [
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     };
 
+    // ✅ CLEAN ADDRESS FORMATTER (ADDED ONLY)
+    const formatAddress = (data) => {
+        if (!data || !data.address) return data.display_name || "";
+
+        const addr = data.address;
+
+        const house = addr.house_number || "";
+        const road = addr.road || "";
+        const city = addr.city || addr.town || addr.village || "";
+        const state = addr.state || "";
+        const postcode = addr.postcode || "";
+
+        // Shorten common road types
+        const cleanRoad = road
+            .replace("Avenue", "Ave")
+            .replace("Street", "St")
+            .replace("Road", "Rd")
+            .replace("Drive", "Dr")
+            .replace("Lane", "Ln");
+
+        return `${house} ${cleanRoad}, ${city} ${state} ${postcode}`.trim();
+    };
+
+    // ✅ SMART LOCATION LABEL (ADDED ONLY)
+    const getLocationLabel = (lat, lng, data) => {
+        const distanceToAnita = getDistance(lat, lng, 42.4770, -88.0950);
+        const distanceToMcMillen = getDistance(lat, lng, 42.3835, -88.0956);
+
+        if (distanceToAnita < 0.5) return "1020 Yard";
+        if (distanceToMcMillen < 0.5) return "61 Main";
+
+        // fallback to clean address
+        return formatAddress(data);
+    };
+
     useEffect(() => {
         if (initialIsPTO) {
             setIsPTO(true);
@@ -80,8 +115,8 @@ export default function StartShiftForm({ onSubmit, onPTO, isLoading, drivers = [
                         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
                     );
                     const data = await res.json();
-                    if (data && data.display_name) {
-                        setAddress(data.display_name);
+                    if (data) {
+                        setAddress(getLocationLabel(lat, lng, data));
                     }
                 } catch {
                     setAddress("Address unavailable");
