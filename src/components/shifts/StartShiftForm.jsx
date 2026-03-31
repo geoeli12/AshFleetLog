@@ -224,8 +224,14 @@ export default function StartShiftForm({ onSubmit, onPTO, isLoading, drivers = [
                             </div>
 
                             {address && (
-                                <div className="text-xs text-white/60">
-                                    {address}
+                                <div className="bg-white/60 rounded-xl p-3">
+                                    <div className="flex items-center gap-2 text-xs mb-1 text-zinc-600">
+                                        <MapPin className="h-3.5 w-3.5" />
+                                        Current Location
+                                    </div>
+                                    <div className="text-sm font-medium text-zinc-900 break-words">
+                                        {address}
+                                    </div>
                                 </div>
                             )}
 
