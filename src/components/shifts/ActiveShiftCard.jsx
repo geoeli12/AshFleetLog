@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -86,9 +85,9 @@ export default function ActiveShiftCard({ shift, onCancel, onDriverClick }) {
                     </div>
                     <div className="bg-white/60 rounded-xl p-3">
                         <div className={`flex items-center gap-2 text-xs mb-1 ${isNight ? 'text-indigo-700' : 'text-amber-800'}`}>
-                            <Gauge className="h-3.5 w-3.5" /> Start Miles
+                            <Gauge className="h-3.5 w-3.5" /> Start ODM Mi
                         </div>
-                        <div className="font-semibold">{shift.starting_odometer?.toLocaleString()}</div>
+                        <div className="font-semibold">{shift.start_odometer?.toLocaleString()}</div>
                     </div>
                     <div className="bg-white/60 rounded-xl p-3">
                         <div className={`flex items-center gap-2 text-xs mb-1 ${isNight ? 'text-indigo-700' : 'text-amber-800'}`}>
@@ -101,4 +100,3 @@ export default function ActiveShiftCard({ shift, onCancel, onDriverClick }) {
         </Card>
     );
 }
-
