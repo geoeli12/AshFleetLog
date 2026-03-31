@@ -304,6 +304,7 @@ export default function DriverLog() {
                                 <StartShiftForm 
                                     onSubmit={(data) => startShiftMutation.mutate({...data, driver_name: selectedDriver})}
                                     onPTO={(data) => ptoMutation.mutate({...data, driver_name: selectedDriver})}
+                                    onCancel={() => setSelectedDriver("")}   // ✅ ADD THIS
                                     isLoading={startShiftMutation.isPending || ptoMutation.isPending}
                                     drivers={drivers}
                                     initialIsPTO={initialPtoOpen}
