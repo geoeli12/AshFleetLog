@@ -7,8 +7,9 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Truck, Clock, Gauge, Sun, Moon, CalendarDays, MapPin } from "lucide-react";
 import { format, parseISO } from "date-fns";
+import { X } from "lucide-react";
 
-export default function StartShiftForm({ onSubmit, onPTO, isLoading, drivers = [], initialIsPTO = false, initialPtoDates = [] }) {
+export default function StartShiftForm({ onSubmit, onPTO, onCancel, isLoading, drivers = [], initialIsPTO = false, initialPtoDates = [] }) {
     const [formData, setFormData] = useState({
         unit_number: '',
         starting_odometer: '',
@@ -166,7 +167,17 @@ export default function StartShiftForm({ onSubmit, onPTO, isLoading, drivers = [
 
     return (
         <Card className="border-0 shadow-xl bg-white ring-1 ring-black/5 backdrop-blur-sm">
-            <CardHeader className="pb-4">
+            <CardHeader className="pb-4 relative">
+
+                {/* ✅ CLOSE BUTTON (TOP RIGHT) */}
+                <button
+                    type="button"
+                    onClick={() => onCancel && onCancel()}
+                    className="absolute top-4 right-4 h-9 w-9 flex items-center justify-center rounded-lg bg-black/40 hover:bg-black/60 transition-all hover:scale-105 shadow-md"
+                >
+                    <X className="h-5 w-5 text-white" />
+                </button>
+
                 <CardTitle className="text-2xl font-light tracking-tight text-white flex items-center gap-3">
                     <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500/100 to-amber-600 flex items-center justify-center">
                         <Truck className="h-5 w-5 text-white" />
