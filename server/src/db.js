@@ -33,6 +33,11 @@ const COLLECTIONS = {
       "status",
       "attendance_status",
       "created_at",
+      "start_lat",
+      "start_lng",
+      "start_address",
+      "outside_location",
+      "outside_reason",
     ],
   },
 
