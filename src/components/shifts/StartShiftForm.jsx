@@ -54,8 +54,27 @@ export default function StartShiftForm({ onSubmit, onPTO, onCancel, isLoading, d
         const house = addr.house_number || "";
         const road = addr.road || "";
         const city = addr.city || addr.town || addr.village || "";
-        const state = addr.state || "";
+        const stateFull = addr.state || "";
         const postcode = addr.postcode || "";
+
+        // 🔥 STATE CONVERSION MAP
+        const stateMap = {
+            "Alabama": "AL", "Alaska": "AK", "Arizona": "AZ", "Arkansas": "AR",
+            "California": "CA", "Colorado": "CO", "Connecticut": "CT", "Delaware": "DE",
+            "Florida": "FL", "Georgia": "GA", "Hawaii": "HI", "Idaho": "ID",
+            "Illinois": "IL", "Indiana": "IN", "Iowa": "IA", "Kansas": "KS",
+            "Kentucky": "KY", "Louisiana": "LA", "Maine": "ME", "Maryland": "MD",
+            "Massachusetts": "MA", "Michigan": "MI", "Minnesota": "MN", "Mississippi": "MS",
+            "Missouri": "MO", "Montana": "MT", "Nebraska": "NE", "Nevada": "NV",
+            "New Hampshire": "NH", "New Jersey": "NJ", "New Mexico": "NM", "New York": "NY",
+            "North Carolina": "NC", "North Dakota": "ND", "Ohio": "OH", "Oklahoma": "OK",
+            "Oregon": "OR", "Pennsylvania": "PA", "Rhode Island": "RI", "South Carolina": "SC",
+            "South Dakota": "SD", "Tennessee": "TN", "Texas": "TX", "Utah": "UT",
+            "Vermont": "VT", "Virginia": "VA", "Washington": "WA", "West Virginia": "WV",
+            "Wisconsin": "WI", "Wyoming": "WY"
+        };
+
+        const state = stateMap[stateFull] || stateFull;
 
         // Shorten common road types
         const cleanRoad = road
@@ -65,7 +84,7 @@ export default function StartShiftForm({ onSubmit, onPTO, onCancel, isLoading, d
             .replace("Drive", "Dr")
             .replace("Lane", "Ln");
 
-        return `${house} ${cleanRoad}, ${city} ${state} ${postcode}`.trim();
+        return `${house} ${cleanRoad}, ${city}, ${state} ${postcode}`.trim();
     };
 
     // ✅ SMART LOCATION LABEL (ADDED ONLY)
