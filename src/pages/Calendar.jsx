@@ -17,8 +17,11 @@ function normalizeStatus(v) {
 }
 
 function pickHigherPriority(existing, next) {
+  // Highest -> lowest: pto, absent, late, present
   const rank = { pto: 4, absent: 3, late: 2, present: 1 };
-  return (rank[next] || 0) >= (rank[existing] || 0) ? next : existing;
+  const a = rank[existing] || 0;
+  const b = rank[next] || 0;
+  return b >= a ? next : existing;
 }
 
 function safeISODate(value) {
@@ -31,33 +34,42 @@ function safeISODate(value) {
   return "";
 }
 
+function noteFromShift(shift) {
+  const u = shift?.unit_number;
+  if (typeof u === "string" && u.trim().toUpperCase().startsWith("NOTE:")) {
+    return u.replace(/^NOTE:\s*/i, "");
+  }
+  return "";
+}
+
 export default function Calendar() {
-  const [selectedDay, setSelectedDay] = useState(null);
+  const [selectedDay, setSelectedDay] = useState(null); // Date
   const [dayModalOpen, setDayModalOpen] = useState(false);
+  const [dayRecords, setDayRecords] = useState([]);
 
   const [editOpen, setEditOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
 
   const queryClient = useQueryClient();
 
-  // 🔹 Drivers
   const { data: drivers = [] } = useQuery({
     queryKey: ["drivers"],
     queryFn: () => api.entities.Driver.filter({ active: true }, "name"),
   });
 
-  // 🔹 Shifts
   const { data: shifts = [] } = useQuery({
     queryKey: ["allShifts"],
     queryFn: () => api.entities.Shift.list("-created_date"),
   });
 
   const employees = useMemo(() => {
-    return (Array.isArray(drivers) ? drivers : [])
-      .filter((d) => d?.name)
+    const list = Array.isArray(drivers) ? drivers : [];
+    return list
+      .filter((d) => d && d.name)
       .map((d) => ({
         id: String(d.id ?? d.employee_id ?? d.name),
         name: String(d.name),
+        // we don't truly have dept in this app; keep compatibility with the Base44 UI
         department: d.state ? String(d.state) : "",
       }));
   }, [drivers]);
@@ -68,194 +80,263 @@ export default function Calendar() {
     );
   }, [shifts]);
 
-  // 🔥 CALENDAR DOTS (unchanged logic)
+  // Calendar dots: one per employee per date, highest priority status wins.
   const attendance = useMemo(() => {
-    const byDate = new Map();
+    const byDate = new Map(); // date -> employeeKey -> { status, employee_name }
 
     for (const s of completedShifts) {
-      const driverName = String(s?.driver_name || "").trim();
+      const driverName = String(s?.driver_name || s?.driver || s?.name || "").trim();
       if (!driverName) continue;
 
       const matched = employees.find((e) => e.name === driverName);
-      const key = matched ? matched.id : driverName;
+      const employeeKey = matched ? matched.id : driverName;
 
-      const isPto = !!(s?.is_pto || s?.shift_type === "pto");
-      const status = isPto ? "pto" : normalizeStatus(s?.attendance_status);
+      const isPto = !!(s?.is_pto || String(s?.shift_type || "").toLowerCase() === "pto");
+      const status = isPto ? "pto" : normalizeStatus(s?.attendance_status || "present");
 
-      const baseDate = safeISODate(s?.date || s?.shift_date);
+      const baseDate = safeISODate(s?.date || s?.shift_date || s?.shiftDate || s?.shift_dt);
       const dates = Array.isArray(s?.pto_dates) && s.pto_dates.length
-        ? s.pto_dates.map((d) => safeISODate(d))
+        ? s.pto_dates.map((d) => safeISODate(d)).filter(Boolean)
         : [baseDate];
 
       for (const dateStr of dates) {
         if (!dateStr) continue;
-
         if (!byDate.has(dateStr)) byDate.set(dateStr, new Map());
-
-        const map = byDate.get(dateStr);
-        const existing = map.get(key);
-
-        const finalStatus = existing
-          ? pickHigherPriority(existing.status, status)
-          : status;
-
-        map.set(key, {
-          status: finalStatus,
-          employee_name: matched?.name || driverName,
+        const m = byDate.get(dateStr);
+        const existing = m.get(employeeKey);
+        const nextStatus = existing ? pickHigherPriority(existing.status, status) : status;
+        m.set(employeeKey, {
+          status: nextStatus,
+          employee_name: matched ? matched.name : driverName,
         });
       }
     }
 
-    const result = [];
-
-    for (const [dateStr, map] of byDate.entries()) {
-      for (const [key, val] of map.entries()) {
-        result.push({
-          id: `${dateStr}::${key}`,
+    const results = [];
+    for (const [dateStr, m] of byDate.entries()) {
+      for (const [employeeKey, info] of m.entries()) {
+        results.push({
+          id: `${dateStr}::${employeeKey}`,
           date: dateStr,
-          status: val.status,
-          employee_name: val.employee_name,
+          status: info.status,
+          employee_name: info.employee_name,
         });
       }
     }
 
-    return result;
+    return results;
   }, [completedShifts, employees]);
 
-  // 🔥 DAY RECORDS (FIXED — NO STATE)
-  const dayRecords = useMemo(() => {
-    if (!selectedDay) return [];
-
-    const dateStr = format(selectedDay, "yyyy-MM-dd");
-
-    return completedShifts
-      .filter((s) => {
-        const baseDate = safeISODate(s?.date || s?.shift_date);
-        const dates = Array.isArray(s?.pto_dates) && s.pto_dates.length
-          ? s.pto_dates.map((d) => safeISODate(d))
-          : [baseDate];
-
-        return dates.includes(dateStr);
-      })
-      .map((s) => {
-        const matched = employees.find((e) => e.name === s.driver_name);
-
-        const status = s.is_pto
-          ? "pto"
-          : normalizeStatus(s.attendance_status);
-
-        return {
-          id: String(s.id),
-          _shiftId: String(s.id),
-          date: dateStr,
-          status,
-          employee_name: matched?.name || s.driver_name,
-          department: matched?.department || "",
-          start_time: s.start_time || "",
-          end_time: s.end_time || "",
-          notes: s.attendance_notes || "",
-        };
-      });
-  }, [selectedDay, completedShifts, employees]);
-
-  // 🔹 MUTATIONS
   const createShift = useMutation({
-    mutationFn: (payload) => api.entities.Shift.create(payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["allShifts"] }),
+    mutationFn: async (payload) => {
+      const res = await api.entities.Shift.create(payload);
+      return res;
+    },
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["allShifts"] });
+    },
   });
 
   const updateShift = useMutation({
-    mutationFn: ({ id, payload }) => api.entities.Shift.update(id, payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["allShifts"] }),
+    mutationFn: async ({ id, payload }) => api.entities.Shift.update(id, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["allShifts"] });
+    },
   });
 
   const deleteShift = useMutation({
-    mutationFn: (id) => api.entities.Shift.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["allShifts"] }),
+    mutationFn: async (id) => api.entities.Shift.delete(id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["allShifts"] });
+    },
   });
 
-  // 🔥 CLICK DAY
-  const handleDayClick = useCallback((day) => {
-    setSelectedDay(day);
-    setDayModalOpen(true);
-  }, []);
+  const handleDayClick = useCallback(
+    (day) => {
+      const dateStr = format(day, "yyyy-MM-dd");
 
-  // 🔹 NEW ATTENDANCE
-  const openNewAttendance = useCallback((employee) => {
-    if (!selectedDay) return;
+      const recs = [];
+      for (const s of completedShifts) {
+        const driverName = String(s?.driver_name || "").trim();
+        if (!driverName) continue;
 
-    setEditingRecord({
-      isNew: true,
-      date: format(selectedDay, "yyyy-MM-dd"),
-      employee_id: employee.id,
-      employee_name: employee.name,
-      attendance_status: "present",
-      start_time: "",
-      end_time: "",
-      notes: "",
-    });
+        const isPto = !!(s?.is_pto || String(s?.shift_type || "").toLowerCase() === "pto");
+        const status = isPto ? "pto" : normalizeStatus(s?.attendance_status || "present");
 
-    setEditOpen(true);
-  }, [selectedDay]);
+        const baseDate = safeISODate(s?.date || s?.shift_date || s?.shiftDate || s?.shift_dt);
+        const dates = Array.isArray(s?.pto_dates) && s.pto_dates.length
+          ? s.pto_dates.map((d) => safeISODate(d)).filter(Boolean)
+          : [baseDate];
 
-  // 🔹 EDIT
+        if (!dates.includes(dateStr)) continue;
+
+        const matched = employees.find((e) => e.name === driverName);
+
+        recs.push({
+          id: Array.isArray(s?.pto_dates) && s.pto_dates.length ? `${s.id}::${dateStr}` : String(s.id),
+          _shiftId: String(s.id),
+          _virtualDate: dateStr,
+          _isPtoMulti: Array.isArray(s?.pto_dates) && s.pto_dates.length > 1,
+          _ptoDates: Array.isArray(s?.pto_dates) ? s.pto_dates : null,
+
+          date: dateStr,
+          status,
+          attendance_status: status,
+          employee_id: matched ? matched.id : driverName,
+          employee_name: matched ? matched.name : driverName,
+          department: matched?.department || "",
+
+          start_time: s?.start_time || "",
+          end_time: s?.end_time || "",
+          notes: s?.attendance_notes || "",
+        });
+      }
+
+      // ❌ REMOVED fake absent generation completely
+
+      setSelectedDay(day);
+      setDayRecords(recs);
+      setDayModalOpen(true);
+    },
+    [completedShifts, employees]
+  );
+
+  const openNewAttendance = useCallback(
+    (employee) => {
+      if (!selectedDay) return;
+      const dateStr = format(selectedDay, "yyyy-MM-dd");
+      setEditingRecord({
+        isNew: true,
+        _shiftId: null,
+        date: dateStr,
+        employee_id: employee.id,
+        employee_name: employee.name,
+        attendance_status: "present",
+        start_time: "",
+        end_time: "",
+        notes: "",
+      });
+      setEditOpen(true);
+    },
+    [selectedDay]
+  );
+
   const openEditAttendance = useCallback((record) => {
-    setEditingRecord({ ...record, isNew: false });
+    setEditingRecord({
+      isNew: false,
+      ...record,
+    });
     setEditOpen(true);
   }, []);
 
-  // 🔹 DELETE
-  const handleDelete = useCallback(async (record) => {
-    if (!record?._shiftId) return;
-    await deleteShift.mutateAsync(record._shiftId);
-  }, [deleteShift]);
+  const handleDelete = useCallback(
+    async (record) => {
+      if (!record?._shiftId) return;
 
-  // 🔥 SAVE (clean + instant UI update)
-  const handleSave = useCallback(async (form) => {
-    const status = normalizeStatus(form.attendance_status);
+      if (record._isPtoMulti && Array.isArray(record._ptoDates)) {
+        const remaining = record._ptoDates
+          .map((d) => safeISODate(d))
+          .filter((d) => d && d !== record._virtualDate);
+        await updateShift.mutateAsync({
+          id: record._shiftId,
+          payload: { pto_dates: remaining },
+        });
+        return;
+      }
 
-    const payload = {
-      driver_name: form.employee_name,
-      date: form.date,
-      status: "completed",
-      attendance_status: status,
-      is_pto: status === "pto",
-      shift_type: status === "pto" ? "pto" : "day",
-      pto_dates: status === "pto" ? [form.date] : [],
-      start_time: form.start_time || "",
-      end_time: form.end_time || "",
-      attendance_notes: form.notes || "",
-    };
+      await deleteShift.mutateAsync(record._shiftId);
+    },
+    [deleteShift, updateShift]
+  );
 
-    const existing = shifts.find(s =>
-      String(s.driver_name).trim() === form.employee_name &&
-      safeISODate(s.date || s.shift_date) === form.date
-    );
+  const handleSave = useCallback(
+    async (form) => {
+      const status = normalizeStatus(form.attendance_status);
 
-    if (existing) {
-      await updateShift.mutateAsync({ id: existing.id, payload });
-    } else {
-      await createShift.mutateAsync(payload);
-    }
+      const payload = {
+        driver_name: form.employee_name,
+        date: form.date,
+        status: "completed",
+        attendance_status: status,
+        is_pto: status === "pto",
+        shift_type: status === "pto" ? "pto" : "day",
+        pto_dates: status === "pto" ? [form.date] : [],
+        start_time: form.start_time || "",
+        end_time: form.end_time || "",
+        attendance_notes: form.notes || "",
+      };
 
-    setEditOpen(false);
-    setEditingRecord(null);
-  }, [shifts, createShift, updateShift]);
+      let updatedShiftId = editingRecord?._shiftId;
+
+      // 🔥 CHECK EXISTING
+      const existing = shifts.find(s =>
+        String(s.driver_name).trim() === form.employee_name &&
+        safeISODate(s.shift_date || s.date) === form.date
+      );
+
+      if (existing) {
+        updatedShiftId = existing.id;
+
+        await updateShift.mutateAsync({
+          id: existing.id,
+          payload,
+        });
+
+      } else {
+        const newShift = await createShift.mutateAsync(payload);
+        updatedShiftId = newShift?.id;
+      }
+
+      // =========================
+      // 🔥 INSTANT UI UPDATE
+      // =========================
+
+      const matched = employees.find(e => e.name === form.employee_name);
+
+      const newRecord = {
+        id: String(updatedShiftId),
+        _shiftId: String(updatedShiftId),
+        date: form.date,
+        status,
+        attendance_status: status,
+        employee_id: matched ? matched.id : form.employee_name,
+        employee_name: form.employee_name,
+        department: matched?.department || "",
+        start_time: form.start_time || "",
+        end_time: form.end_time || "",
+        notes: form.notes || "",
+      };
+
+      setDayRecords(prev => {
+        const filtered = prev.filter(r =>
+          !(r.employee_name === form.employee_name && r.date === form.date)
+        );
+
+        return [...filtered, newRecord];
+      });
+
+      // =========================
+      // 🔄 BACKGROUND SYNC (no wait)
+      // =========================
+      queryClient.invalidateQueries({ queryKey: ["allShifts"] });
+
+      setEditOpen(false);
+      setEditingRecord(null);
+    },
+    [createShift, updateShift, editingRecord, shifts, employees]
+  );
 
   return (
     <div className="w-full">
       <div className="px-6 py-8">
-        <AttendanceCalendar
-          attendance={attendance}
-          employees={employees}
-          onDayClick={handleDayClick}
-        />
+        <AttendanceCalendar attendance={attendance} employees={employees} onDayClick={handleDayClick} />
 
         <DayDetailModal
           open={dayModalOpen}
           onOpenChange={setDayModalOpen}
           selectedDate={selectedDay}
-          records={dayRecords} // 🔥 always fresh now
+          records={dayRecords}
           employees={employees}
           onMarkAttendance={openNewAttendance}
           onEdit={openEditAttendance}
