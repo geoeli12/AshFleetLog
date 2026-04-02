@@ -134,7 +134,7 @@ export default function DayDetailModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-lg max-h-[85vh]">
+            <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-semibold">
                         {format(selectedDate, 'EEEE, MMMM d, yyyy')}
@@ -190,7 +190,7 @@ export default function DayDetailModal({
                     </div>
                 </div>
 
-                <ScrollArea className="max-h-[60vh] pr-4">
+                <ScrollArea className="flex-1 pr-4">
                     <div className="py-2">
                         {renderSection("Present", groupedRecords.present, "present")}
                         {renderSection("PTO", groupedRecords.pto, "pto")}
