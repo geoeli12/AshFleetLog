@@ -137,7 +137,11 @@ export default function Calendar() {
   }, [completedShifts, employees]);
 
   const createShift = useMutation({
-    mutationFn: async (payload) => api.entities.Shift.create(payload),
+    mutationFn: async (payload) => {
+      const res = await api.entities.Shift.create(payload);
+      return res;
+    },
+
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["allShifts"] });
     },
@@ -284,7 +288,7 @@ export default function Calendar() {
 
       const payload = {
         driver_name: form.employee_name,
-        date: form.date, // ✅ KEEP ORIGINAL
+        date: form.date,
         status: "completed",
         attendance_status: status,
         is_pto: status === "pto",
@@ -302,7 +306,6 @@ export default function Calendar() {
 
       payload.attendance_notes = form.notes || "";
 
-      // 🔥 ONLY ADD THIS BLOCK (THE FIX)
       if (editingRecord?._shiftId) {
 
         await updateShift.mutateAsync({
@@ -318,12 +321,27 @@ export default function Calendar() {
         );
 
         if (existing) {
+
           await updateShift.mutateAsync({
             id: existing.id,
             payload,
           });
+
+          // ✅ FIX
+          setEditingRecord(prev => ({
+            ...prev,
+            _shiftId: existing.id
+          }));
+
         } else {
-          await createShift.mutateAsync(payload);
+
+          const newShift = await createShift.mutateAsync(payload);
+
+          // ✅ FIX
+          setEditingRecord(prev => ({
+            ...prev,
+            _shiftId: newShift?.id
+          }));
         }
       }
 
