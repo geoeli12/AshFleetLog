@@ -134,7 +134,7 @@ export default function DayDetailModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
+            <DialogContent className="sm:max-w-lg h-[85vh] max-h-[85vh] flex flex-col overflow-hidden">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-semibold">
                         {format(selectedDate, 'EEEE, MMMM d, yyyy')}
@@ -190,21 +190,24 @@ export default function DayDetailModal({
                     </div>
                 </div>
 
-                <ScrollArea className="flex-1 pr-4">
-                    <div className="py-2">
-                        {renderSection("Present", groupedRecords.present, "present")}
-                        {renderSection("PTO", groupedRecords.pto, "pto")}
-                        {renderSection("Late", groupedRecords.late, "late")}
-                        {renderSection("Half Day", groupedRecords["half-day"], "half-day")}
-                        {renderSection("Absent", groupedRecords.absent, "absent")}
+                {/* ✅ FIXED SCROLL SECTION */}
+                <div className="flex-1 min-h-0">
+                    <ScrollArea className="h-full pr-4">
+                        <div className="py-2">
+                            {renderSection("Present", groupedRecords.present, "present")}
+                            {renderSection("PTO", groupedRecords.pto, "pto")}
+                            {renderSection("Late", groupedRecords.late, "late")}
+                            {renderSection("Half Day", groupedRecords["half-day"], "half-day")}
+                            {renderSection("Absent", groupedRecords.absent, "absent")}
                         
-                        {records.length === 0 && (
-                            <div className="text-center py-8 text-slate-500">
-                                No attendance data for this day
-                            </div>
-                        )}
-                    </div>
-                </ScrollArea>
+                            {records.length === 0 && (
+                                <div className="text-center py-8 text-slate-500">
+                                    No attendance data for this day
+                                </div>
+                            )}
+                        </div>
+                    </ScrollArea>
+                </div>
             </DialogContent>
         </Dialog>
     );
