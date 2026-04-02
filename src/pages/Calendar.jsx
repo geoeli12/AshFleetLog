@@ -54,7 +54,7 @@ export default function Calendar() {
 
   const { data: drivers = [] } = useQuery({
     queryKey: ["drivers"],
-    queryFn: () => api.entities.Driver.filter({ status: "active" }, "name"),
+    queryFn: () => api.entities.Driver.filter({ active: true }, "name"),
   });
 
   const { data: shifts = [] } = useQuery({
