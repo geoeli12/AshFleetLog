@@ -279,12 +279,12 @@ export default function Calendar() {
 
   const handleSave = useCallback(
     async (form) => {
-      // Map the UI Attendance record onto the existing Shift entity.
+
       const status = normalizeStatus(form.attendance_status);
 
       const payload = {
         driver_name: form.employee_name,
-        date: form.date,
+        date: form.date, // ✅ KEEP ORIGINAL
         status: "completed",
         attendance_status: status,
         is_pto: status === "pto",
@@ -299,27 +299,43 @@ export default function Calendar() {
 
       if (form.start_time) payload.start_time = form.start_time;
       if (form.end_time) payload.end_time = form.end_time;
+
       payload.attendance_notes = form.notes || "";
 
-      if (editingRecord?.isNew || !editingRecord?._shiftId) {
-        await createShift.mutateAsync(payload);
+      // 🔥 ONLY ADD THIS BLOCK (THE FIX)
+      if (editingRecord?._shiftId) {
 
-      } else {
         await updateShift.mutateAsync({
           id: editingRecord._shiftId,
           payload,
         });
+
+      } else {
+
+        const existing = shifts.find(s =>
+          String(s.driver_name).trim() === form.employee_name &&
+          safeISODate(s.shift_date || s.date) === form.date
+        );
+
+        if (existing) {
+          await updateShift.mutateAsync({
+            id: existing.id,
+            payload,
+          });
+        } else {
+          await createShift.mutateAsync(payload);
+        }
       }
 
       setEditOpen(false);
       setEditingRecord(null);
 
-      // ✅ REFRESH DAY DETAIL MODAL
       if (selectedDay) {
         handleDayClick(selectedDay);
       }
+
     },
-    [createShift, updateShift, editingRecord, selectedDay, handleDayClick]
+    [createShift, updateShift, editingRecord, selectedDay, handleDayClick, shifts]
   );
 
   return (
