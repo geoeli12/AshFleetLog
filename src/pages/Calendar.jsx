@@ -283,7 +283,7 @@ export default function Calendar() {
 
   const handleSave = useCallback(
     async (form) => {
-
+      // Map the UI Attendance record onto the existing Shift entity.
       const status = normalizeStatus(form.attendance_status);
 
       const payload = {
@@ -306,52 +306,54 @@ export default function Calendar() {
 
       payload.attendance_notes = form.notes || "";
 
-      if (editingRecord?._shiftId) {
+      // 🔥 ONLY ENHANCED THIS BLOCK (everything else untouched)
+      if (editingRecord?.isNew || !editingRecord?._shiftId) {
 
-        await updateShift.mutateAsync({
-          id: editingRecord._shiftId,
-          payload,
-        });
-
-      } else {
-
+        // ✅ CHECK IF RECORD ALREADY EXISTS
         const existing = shifts.find(s =>
           String(s.driver_name).trim() === form.employee_name &&
           safeISODate(s.shift_date || s.date) === form.date
         );
 
         if (existing) {
-
+          // ✅ UPDATE INSTEAD OF CREATE (prevents duplicates)
           await updateShift.mutateAsync({
             id: existing.id,
             payload,
           });
 
-          // ✅ FIX
+          // ✅ LINK UI TO DB
           setEditingRecord(prev => ({
             ...prev,
             _shiftId: existing.id
           }));
 
         } else {
-
+          // ✅ CREATE NEW RECORD
           const newShift = await createShift.mutateAsync(payload);
 
-          // ✅ FIX
+          // ✅ LINK UI TO DB
           setEditingRecord(prev => ({
             ...prev,
             _shiftId: newShift?.id
           }));
         }
+
+      } else {
+        // ✅ EXISTING RECORD (UNCHANGED)
+        await updateShift.mutateAsync({
+          id: editingRecord._shiftId,
+          payload,
+        });
       }
 
       setEditOpen(false);
       setEditingRecord(null);
 
+      // ✅ REFRESH DAY DETAIL MODAL
       if (selectedDay) {
         handleDayClick(selectedDay);
       }
-
     },
     [createShift, updateShift, editingRecord, selectedDay, handleDayClick, shifts]
   );
