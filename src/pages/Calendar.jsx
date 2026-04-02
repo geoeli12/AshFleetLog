@@ -309,8 +309,13 @@ export default function Calendar() {
 
       setEditOpen(false);
       setEditingRecord(null);
+
+      // ✅ REFRESH DAY DETAIL MODAL
+      if (selectedDay) {
+        handleDayClick(selectedDay);
+      }
     },
-    [createShift, updateShift, editingRecord]
+    [createShift, updateShift, editingRecord, selectedDay, handleDayClick]
   );
 
   return (
