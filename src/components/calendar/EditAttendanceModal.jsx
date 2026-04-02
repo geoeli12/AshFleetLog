@@ -143,7 +143,7 @@ export default function EditAttendanceModal({ open, onOpenChange, employees = []
             </Button>
             <Button
               disabled={!canSave}
-              className="bg-slate-900 hover:bg-slate-800"
+              className="bg-slate-900 hover:bg-slate-800 text-white disabled:bg-slate-400 disabled:text-white"
 
               onClick={() => {
                 const payload = {
@@ -164,7 +164,11 @@ export default function EditAttendanceModal({ open, onOpenChange, employees = []
 
                   notes: notes || "",
                 };
+
                 onSave?.(payload);
+
+                // ✅ CLOSE EDIT MODAL
+                onOpenChange?.(false);
               }}
             >
               {record?.isNew ? "Add" : "Update"}
