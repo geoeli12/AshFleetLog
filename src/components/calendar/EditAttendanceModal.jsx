@@ -144,14 +144,24 @@ export default function EditAttendanceModal({ open, onOpenChange, employees = []
             <Button
               disabled={!canSave}
               className="bg-slate-900 hover:bg-slate-800"
+
               onClick={() => {
                 const payload = {
                   employee_id: employeeId,
                   employee_name: employeeName,
                   date,
                   attendance_status: status,
-                  start_time: buildDateTime(date, checkIn),
-                  end_time: buildDateTime(date, checkOut),
+
+                  start_time:
+                    status === "pto"
+                      ? buildDateTime(date, "06:00")
+                      : buildDateTime(date, checkIn || "06:00"),
+
+                  end_time:
+                    status === "pto"
+                      ? buildDateTime(date, "14:00")
+                      : (checkOut ? buildDateTime(date, checkOut) : null),
+
                   notes: notes || "",
                 };
                 onSave?.(payload);
