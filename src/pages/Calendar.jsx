@@ -301,10 +301,14 @@ export default function Calendar() {
       if (form.end_time) payload.end_time = form.end_time;
       payload.attendance_notes = form.notes || "";
 
-      if (editingRecord?.isNew) {
+      if (editingRecord?.isNew || !editingRecord?._shiftId) {
         await createShift.mutateAsync(payload);
-      } else if (editingRecord?._shiftId) {
-        await updateShift.mutateAsync({ id: editingRecord._shiftId, payload });
+
+      } else {
+        await updateShift.mutateAsync({
+          id: editingRecord._shiftId,
+          payload,
+        });
       }
 
       setEditOpen(false);
