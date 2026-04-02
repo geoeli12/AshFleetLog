@@ -166,7 +166,7 @@ export default function Calendar() {
       const dateStr = format(day, "yyyy-MM-dd");
 
       const recs = [];
-      for (const s of completedShifts) {
+      for (const s of shifts) {
         const driverName = String(s?.driver_name || "").trim();
         if (!driverName) continue;
 
@@ -230,7 +230,7 @@ export default function Calendar() {
       setDayRecords(recs);
       setDayModalOpen(true);
     },
-    [completedShifts, employees]
+    [shifts, employees]
   );
 
   const openNewAttendance = useCallback(
@@ -350,9 +350,16 @@ export default function Calendar() {
       setEditOpen(false);
       setEditingRecord(null);
 
+      // 🔥 WAIT for fresh data BEFORE refreshing modal
+      await queryClient.refetchQueries({ queryKey: ["allShifts"] });
+
       // ✅ REFRESH DAY DETAIL MODAL
       if (selectedDay) {
-        handleDayClick(selectedDay);
+        setDayModalOpen(false);
+
+        setTimeout(() => {
+          handleDayClick(selectedDay);
+        }, 0);
       }
     },
     [createShift, updateShift, editingRecord, selectedDay, handleDayClick, shifts]
