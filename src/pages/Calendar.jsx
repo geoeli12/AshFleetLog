@@ -194,7 +194,7 @@ export default function Calendar() {
 
           start_time: s?.start_time || "",
           end_time: s?.end_time || "",
-          notes: noteFromShift(s),
+          notes: s?.attendance_notes || "",
         });
       }
 
@@ -299,7 +299,7 @@ export default function Calendar() {
 
       if (form.start_time) payload.start_time = form.start_time;
       if (form.end_time) payload.end_time = form.end_time;
-      if (form.notes) payload.unit_number = `NOTE: ${form.notes}`;
+      payload.attendance_notes = form.notes || "";
 
       if (editingRecord?.isNew) {
         await createShift.mutateAsync(payload);
