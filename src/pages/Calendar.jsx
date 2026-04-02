@@ -187,8 +187,8 @@ export default function Calendar() {
           employee_name: matched ? matched.name : driverName,
           department: matched?.department || "",
 
-          start_time: s?.start_time || "",
-          end_time: s?.end_time || "",
+          start_time: s?.start_time || null,
+          end_time: s?.end_time || null,
           notes: s?.attendance_notes || "",
         });
       }
@@ -262,8 +262,8 @@ export default function Calendar() {
         is_pto: status === "pto",
         shift_type: status === "pto" ? "pto" : "day",
         pto_dates: status === "pto" ? [form.date] : [],
-        start_time: form.start_time || "",
-        end_time: form.end_time || "",
+        start_time: form.start_time || null,
+        end_time: form.end_time || null,
         attendance_notes: form.notes || "",
       };
 
@@ -303,8 +303,8 @@ export default function Calendar() {
         employee_id: matched ? matched.id : form.employee_name,
         employee_name: form.employee_name,
         department: matched?.department || "",
-        start_time: form.start_time || "",
-        end_time: form.end_time || "",
+        start_time: form.start_time || null,
+        end_time: form.end_time || null,
         notes: form.notes || "",
       };
 
