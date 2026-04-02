@@ -114,15 +114,6 @@ export default function Calendar() {
 
     const results = [];
     for (const [dateStr, m] of byDate.entries()) {
-      const presentKeys = new Set([...m.keys()]);
-
-      // Absent only makes sense if we have at least one record for that day.
-      for (const e of employees) {
-        if (!presentKeys.has(e.id)) {
-          m.set(e.id, { status: "absent", employee_name: e.name });
-        }
-      }
-
       for (const [employeeKey, info] of m.entries()) {
         results.push({
           id: `${dateStr}::${employeeKey}`,
@@ -166,7 +157,7 @@ export default function Calendar() {
       const dateStr = format(day, "yyyy-MM-dd");
 
       const recs = [];
-      for (const s of shifts) {
+      for (const s of completedShifts) {
         const driverName = String(s?.driver_name || "").trim();
         if (!driverName) continue;
 
@@ -202,35 +193,13 @@ export default function Calendar() {
         });
       }
 
-      // Mark absent for everyone else only if the day has any records
-      const hasAny = recs.length > 0;
-      if (hasAny) {
-        const present = new Set(recs.map((r) => String(r.employee_id)));
-        for (const e of employees) {
-          if (!present.has(String(e.id))) {
-            recs.push({
-              id: `${dateStr}::${e.id}`,
-              _shiftId: null,
-              _virtualDate: dateStr,
-              date: dateStr,
-              status: "absent",
-              attendance_status: "absent",
-              employee_id: e.id,
-              employee_name: e.name,
-              department: e.department || "",
-              start_time: "",
-              end_time: "",
-              notes: "",
-            });
-          }
-        }
-      }
+      // ❌ REMOVED fake absent generation completely
 
       setSelectedDay(day);
       setDayRecords(recs);
       setDayModalOpen(true);
     },
-    [shifts, employees]
+    [completedShifts, employees]
   );
 
   const openNewAttendance = useCallback(
@@ -355,11 +324,7 @@ export default function Calendar() {
 
       // ✅ REFRESH DAY DETAIL MODAL
       if (selectedDay) {
-        setDayModalOpen(false);
-
-        setTimeout(() => {
-          handleDayClick(selectedDay);
-        }, 0);
+        handleDayClick(selectedDay);
       }
     },
     [createShift, updateShift, editingRecord, selectedDay, handleDayClick, shifts]
