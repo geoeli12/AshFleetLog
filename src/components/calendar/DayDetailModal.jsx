@@ -142,39 +142,51 @@ export default function DayDetailModal({
                 </DialogHeader>
                 
                 {/* Add Employee Dropdown */}
-                <div className="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                    <div className="flex gap-3 items-end">
-                        <div className="flex-1">
-                            <label className="text-sm font-medium text-slate-700 mb-2 block">
-                                Mark attendance for employee
-                            </label>
-                            <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select employee..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {employees?.map(emp => (
-                                        <SelectItem key={emp.id} value={emp.id}>
-                                            {emp.name} - {emp.department}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                <div className="mb-4">
+                    <div className="border-0 shadow-md bg-black/60 backdrop-blur-sm rounded-xl p-4">
+                        <label className="text-sm font-medium text-white/90 mb-2 block flex items-center gap-2">
+                            Select Driver
+                        </label>
+
+                        <div className="flex gap-3 items-end">
+                            <div className="flex-1">
+                                <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
+                                    <SelectTrigger className="h-11 border-slate-200 rounded-xl bg-white text-slate-800">
+                                        <SelectValue
+                                            placeholder="Select driver..."
+                                            className="text-slate-500"
+                                        />
+                                    </SelectTrigger>
+
+                                    <SelectContent>
+                                        {employees?.map((emp) => (
+                                            <SelectItem key={emp.id} value={String(emp.id)}>
+                                                {emp.name}
+                                                {emp.department ? ` - ${emp.department}` : ""}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <Button
+                                onClick={() => {
+                                    const employee = employees?.find(
+                                        (e) => String(e.id) === String(selectedEmployee)
+                                    );
+
+                                    if (employee) {
+                                        onMarkAttendance?.(employee);
+                                        setSelectedEmployee('');
+                                    }
+                                }}
+                                disabled={!selectedEmployee}
+                                className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl"
+                            >
+                                <Plus className="w-4 h-4 mr-2" />
+                                Add
+                            </Button>
                         </div>
-                        <Button
-                            onClick={() => {
-                                const employee = employees?.find(e => e.id === selectedEmployee);
-                                if (employee) {
-                                    onMarkAttendance?.(employee);
-                                    setSelectedEmployee('');
-                                }
-                            }}
-                            disabled={!selectedEmployee}
-                            className="bg-slate-900 hover:bg-slate-800"
-                        >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add
-                        </Button>
                     </div>
                 </div>
 
