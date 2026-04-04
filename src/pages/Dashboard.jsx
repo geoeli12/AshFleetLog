@@ -219,12 +219,117 @@ export default function Dashboard() {
                   <StatPill label="This month" value={counts.monthCount} />
                 </div>
 
+                {/* ===== NEW DISPATCH BOARD (ADDED ONLY) ===== */}
+                <DispatchBoard dispatchQuery={dispatchQuery} />
+
               </div>
 
             </div>
           </Section>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ===== NEW COMPONENT (ADDED ONLY) ===== */
+
+function DispatchBoard({ dispatchQuery }) {
+
+  const [dragItem, setDragItem] = useState(null);
+  const [dragOverDriver, setDragOverDriver] = useState(null);
+  const [selectedRun, setSelectedRun] = useState(null);
+
+  const groupedByDriver = useMemo(() => {
+    const orders = Array.isArray(dispatchQuery.data) ? dispatchQuery.data : [];
+    const map = {};
+
+    for (const o of orders) {
+      const driver = String(o?.driver_name || "Unassigned").trim() || "Unassigned";
+      if (!map[driver]) map[driver] = [];
+      map[driver].push(o);
+    }
+
+    return map;
+  }, [dispatchQuery.data]);
+
+  const handleDragStart = (run, fromDriver) => {
+    setDragItem({ run, fromDriver });
+  };
+
+  const handleDrop = (toDriver) => {
+    if (!dragItem) return;
+
+    const { run, fromDriver } = dragItem;
+    if (fromDriver === toDriver) return;
+
+    setDragItem(null);
+    setDragOverDriver(null);
+
+    console.log("Move run:", run.id, "to", toDriver);
+  };
+
+  const handleDragOver = (e, driver) => {
+    e.preventDefault();
+    setDragOverDriver(driver);
+  };
+
+  const handleClickRun = (run) => {
+    setSelectedRun(run);
+    console.log("Clicked run:", run);
+  };
+
+  return (
+    <div className="mt-6 space-y-4">
+
+      {Object.entries(groupedByDriver).map(([driver, runs]) => (
+
+        <div
+          key={driver}
+          onDragOver={(e) => handleDragOver(e, driver)}
+          onDrop={() => handleDrop(driver)}
+          className={`rounded-2xl p-4 backdrop-blur-xl ring-1 ${
+            dragOverDriver === driver ? "ring-amber-400/60" : ""
+          }`}
+          style={{
+            backgroundColor: "var(--dash-tile-bg)",
+            borderColor: "var(--dash-tile-ring)",
+          }}
+        >
+
+          <div className="text-white font-semibold mb-3">
+            {driver}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+
+            {runs.map((r) => {
+              const type = String(r?.type || r?.load_type || "").toLowerCase();
+              const isPickup = type.includes("pickup");
+
+              const color = isPickup
+                ? "bg-green-500/90"
+                : "bg-blue-500/90";
+
+              return (
+                <div
+                  key={r.id}
+                  draggable
+                  onDragStart={() => handleDragStart(r, driver)}
+                  onClick={() => handleClickRun(r)}
+                  className={`px-3 py-2 rounded-full text-xs text-white ${color} shadow cursor-pointer`}
+                >
+                  {r?.company || "Run"} {r?.trailer_number ? `• ${r.trailer_number}` : ""}
+                </div>
+              );
+            })}
+
+          </div>
+
+        </div>
+
+      ))}
+
     </div>
   );
 }
