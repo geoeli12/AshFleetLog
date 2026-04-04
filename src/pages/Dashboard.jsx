@@ -285,10 +285,10 @@ function DispatchBoard({ dispatchQuery }) {
 
         <button
           onClick={() => setSelectedRegion("ALL")}
-          className={`px-3 py-1 rounded-full text-xs ${
+          className={`px-3 py-1 rounded-full text-xs border transition ${
             selectedRegion === "ALL"
-              ? "bg-amber-400 text-black"
-              : "bg-white/10 text-white"
+              ? "bg-amber-400 text-black border-amber-400"
+              : "bg-slate-200 text-slate-700 border-slate-300 hover:bg-slate-300"
           }`}
         >
           ALL
@@ -296,10 +296,10 @@ function DispatchBoard({ dispatchQuery }) {
 
         <button
           onClick={() => setSelectedRegion("IL")}
-          className={`px-3 py-1 rounded-full text-xs ${
+          className={`px-3 py-1 rounded-full text-xs border transition ${
             selectedRegion === "IL"
-              ? "bg-amber-400 text-black"
-              : "bg-white/10 text-white"
+              ? "bg-amber-400 text-black border-amber-400"
+              : "bg-slate-200 text-slate-700 border-slate-300 hover:bg-slate-300"
           }`}
         >
           IL
@@ -307,10 +307,10 @@ function DispatchBoard({ dispatchQuery }) {
 
         <button
           onClick={() => setSelectedRegion("PA")}
-          className={`px-3 py-1 rounded-full text-xs ${
+          className={`px-3 py-1 rounded-full text-xs border transition ${
             selectedRegion === "PA"
-              ? "bg-amber-400 text-black"
-              : "bg-white/10 text-white"
+              ? "bg-amber-400 text-black border-amber-400"
+              : "bg-slate-200 text-slate-700 border-slate-300 hover:bg-slate-300"
           }`}
         >
           PA
