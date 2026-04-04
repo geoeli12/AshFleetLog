@@ -308,10 +308,9 @@ export default function PickUps() {
       if (!called) return false;
 
       const hasPuDate = Boolean(picked);
-      const startOk = called <= selectedDate;
-      const endOk = !hasPuDate || selectedDate <= picked;
 
-      if (!(startOk && endOk)) return false;
+      // ONLY show rows for selected day
+      if (called !== selectedDate) return false;
       if (region && String(log.region || "").toUpperCase() !== String(region).toUpperCase()) return false;
 
       return true;
@@ -329,10 +328,9 @@ export default function PickUps() {
       if (!called) return false;
 
       const hasPuDate = Boolean(picked);
-      const startOk = called <= selectedDate;
-      const endOk = !hasPuDate || selectedDate <= picked;
 
-      if (!(startOk && endOk)) return false;
+      // ONLY show rows for selected day
+      if (called !== selectedDate) return false;
       if (region && String(log.region || "").toUpperCase() !== String(region).toUpperCase()) return false;
       if (!searchTerm) return true;
 
@@ -431,6 +429,61 @@ export default function PickUps() {
     }
   }, [selectedDate]);
 
+  const checkPreviousDayPickups = async () => {
+    try {
+      const selected = parseYMDToLocalDate(selectedDate);
+      const prevDay = subDays(selected, 1);
+
+      const unfinished = uiLogs.filter((log) => {
+        const called = parseYMDToLocalDate(log.date_called_out);
+        const picked = toYMD(log.date_picked_up);
+
+        return (
+          called.getFullYear() === prevDay.getFullYear() &&
+          called.getMonth() === prevDay.getMonth() &&
+          called.getDate() === prevDay.getDate() &&
+          !picked && // NOT picked up
+          String(log.region || "").toUpperCase() === String(region).toUpperCase()
+        );
+      });
+
+      if (!unfinished.length) {
+        toast.info("No unfinished pick ups from previous day");
+        return;
+      }
+
+      let createdCount = 0;
+
+      for (const row of unfinished) {
+
+        const alreadyExists = uiLogs.some((log) => {
+          return (
+            toYMD(log.date_called_out) === selectedDate &&
+            log.company === row.company &&
+            log.dk_trl === row.dk_trl
+          );
+        });
+
+        if (alreadyExists) continue;
+
+        const newRow = {
+          ...row,
+          date_called_out: selectedDate,
+          driver: "",
+          date_picked_up: "",
+        };
+
+        await createMutation.mutateAsync(newRow);
+        createdCount++;
+      }
+
+      toast.success(`${createdCount} pick ups carried over`);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to check previous pick ups");
+    }
+  };
+
   return (
     <div className="w-full">
       <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
@@ -450,12 +503,22 @@ export default function PickUps() {
             </div>
 
             <div className="flex gap-2 shrink-0">
+
               <Link to={createPageUrl("PickupHistory")}>
                 <Button variant="outline" className="rounded-xl">
                   <History className="h-4 w-4 mr-2" />
                   Pick Up History
                 </Button>
               </Link>
+
+              {/* ✅ NEW BUTTON */}
+              <Button
+                variant="outline"
+                onClick={checkPreviousDayPickups}
+                className="rounded-xl"
+              >
+                Check Previous Day Pick Ups
+              </Button>
 
               <Button
                 variant="outline"
@@ -465,6 +528,7 @@ export default function PickUps() {
               >
                 <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
               </Button>
+
             </div>
 
           </div>
