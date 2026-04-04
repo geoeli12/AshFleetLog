@@ -324,6 +324,65 @@ export default function DispatchLog() {
         const previousDriver = String(variables?.data?._previousDeliveredBy || "").trim();
         const orderDate = toYMD(variables?.data?.date || updated?.date);
 
+        // 🚨 HANDLE DRIVER REMOVAL FIRST
+        if (!driverName && previousDriver) {
+
+          const existingShiftList = await api.entities.Shift.filter(
+            {
+              driver_name: previousDriver,
+              shift_date: orderDate,
+              status: "active"
+            },
+            "-created_date",
+            1
+          );
+
+          let shift = Array.isArray(existingShiftList)
+            ? existingShiftList[0]
+            : existingShiftList?.data?.[0];
+
+          if (shift) {
+
+            const existingRuns = await api.entities.Run.filter(
+              {
+                shift_id: shift.id
+              }
+            );
+
+            const runsArray = Array.isArray(existingRuns)
+              ? existingRuns
+              : existingRuns?.data || [];
+
+            // 🎯 Match EXACT run (trailer + company only)
+            const matchingRuns = runsArray.filter(r =>
+              String(r.trailer_number || "") === String(variables.data.trailer_number || "") &&
+              String(r.company || "") === String(variables.data.company || "")
+            );
+
+            // ❌ DELETE ONLY MATCHING RUNS
+            for (const run of matchingRuns) {
+              await api.entities.Run.delete(run.id);
+            }
+
+            const remainingRuns = await api.entities.Run.filter(
+              { shift_id: shift.id }
+            );
+
+            const remainingArray = Array.isArray(remainingRuns)
+              ? remainingRuns
+              : remainingRuns?.data || [];
+
+            if (!remainingArray.length) {
+              await api.entities.Shift.delete(shift.id);
+            }
+          }
+
+          queryClient.invalidateQueries({ queryKey: ["activeShifts"] });
+          queryClient.invalidateQueries({ queryKey: ["runs"] });
+
+          return;
+        }
+
         // 🚨 ONLY when driver is newly assigned
         if (!driverName || previousDriver === driverName) return;
 
