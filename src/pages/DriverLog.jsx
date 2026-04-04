@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Route, Loader2, User, Truck, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { format } from "date-fns";
+import { format, addDays, subDays } from "date-fns";
 import { useLocation } from "react-router-dom";
 import StartShiftForm from '@/components/shifts/StartShiftForm';
 import AddRunForm from '@/components/shifts/AddRunForm';
@@ -43,6 +43,7 @@ export default function DriverLog() {
     const [editingRun, setEditingRun] = useState(null);
     const [initialPtoOpen, setInitialPtoOpen] = useState(false);
     const [initialPtoDates, setInitialPtoDates] = useState([]);
+    const [selectedDate, setSelectedDate] = useState(new Date());
 
     const queryClient = useQueryClient();
     const location = useLocation();
@@ -74,14 +75,31 @@ export default function DriverLog() {
         queryFn: () => api.entities.Shift.filter({ status: 'active' }, '-created_date', 100)
     });
 
+    const { data: shiftsByDate = [], isLoading: shiftsByDateLoading } = useQuery({
+        queryKey: ['shiftsByDate', format(selectedDate, 'yyyy-MM-dd')],
+        queryFn: () => api.entities.Shift.filter(
+            { shift_date: format(selectedDate, 'yyyy-MM-dd') },
+            '-created_date',
+            100
+        )
+    });
+
+    const filteredShifts = shiftsByDate;
+
+    const selectedShift = selectedDriver
+        ? filteredShifts.find(s => s.driver_name === selectedDriver)
+        : null;
+
     const activeShift = selectedDriver 
         ? allActiveShifts.find(shift => shift.driver_name === selectedDriver)
         : null;
 
     const { data: runs = [], isLoading: runsLoading } = useQuery({
-        queryKey: ['runs', activeShift?.id],
-        queryFn: () => activeShift ? api.entities.Run.filter({ shift_id: activeShift.id }, '-created_date') : [],
-        enabled: !!activeShift
+        queryKey: ['runs', selectedShift?.id],
+        queryFn: () => selectedShift 
+            ? api.entities.Run.filter({ shift_id: selectedShift.id }, '-created_date') 
+            : [],
+        enabled: !!selectedShift
     });
 
     const startShiftMutation = useMutation({
@@ -190,11 +208,37 @@ export default function DriverLog() {
     return (
         <div className="w-full">
             <div className="max-w-2xl mx-auto px-4 py-8">
+
+
                 <div className="mb-8">
                     <h1 className="text-3xl font-light tracking-tight text-zinc-900">
                         Driver's <span className="font-semibold">Log</span>
                     </h1>
                     <p className="text-zinc-600 mt-1">Track your shifts and runs</p>
+                </div>
+
+                <div className="flex items-center justify-center gap-4 mb-6">
+
+                    <Button
+                        variant="outline"
+                        onClick={() => setSelectedDate(prev => subDays(prev, 1))}
+                        className="rounded-xl"
+                    >
+                        ←
+                    </Button>
+
+                    <div className="text-lg font-semibold text-zinc-800">
+                        {format(selectedDate, "EEEE, MMM d yyyy")}
+                    </div>
+
+                    <Button
+                        variant="outline"
+                        onClick={() => setSelectedDate(prev => addDays(prev, 1))}
+                        className="rounded-xl"
+                    >
+                        →
+                    </Button>
+
                 </div>
 
                 {/* Driver Selection */}
@@ -231,15 +275,15 @@ export default function DriverLog() {
                             <p className="text-zinc-600 font-medium">Select your name to get started</p>
                         </div>
 
-                        {allActiveShifts.length > 0 && (
+                        {filteredShifts.length > 0 && (
                             <div className="space-y-4">
                                 <h2 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
                                     <Truck className="h-5 w-5 text-amber-700" />
-                                    Active Shifts
-                                    <span className="text-sm font-normal text-zinc-500">({allActiveShifts.length})</span>
+                                    Shifts
+                                    <span className="text-sm font-normal text-zinc-500">({filteredShifts.length})</span>
                                 </h2>
                                 <div className="grid gap-3">
-                                    {allActiveShifts.map((shift) => {
+                                    {filteredShifts.map((shift) => {
                                         const isNight = shift.shift_type === 'night';
                                         return (
                                             <Card key={shift.id} className={`border shadow-sm cursor-pointer transition-all hover:shadow-md ${
@@ -299,7 +343,7 @@ export default function DriverLog() {
                     </>
                 ) : (
                     <AnimatePresence mode="wait">
-                        {!activeShift ? (
+                        {!selectedShift ? (
                             <motion.div key="start-shift" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
                                 <StartShiftForm 
                                     onSubmit={(data) => startShiftMutation.mutate({...data, driver_name: selectedDriver})}
@@ -314,8 +358,8 @@ export default function DriverLog() {
                         ) : (
                             <motion.div key="active-shift" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
                                 <ActiveShiftCard 
-                                    shift={activeShift} 
-                                    onCancel={() => cancelShiftMutation.mutate(activeShift.id)}
+                                    shift={selectedShift} 
+                                    onCancel={() => cancelShiftMutation.mutate(selectedShift.id)}
                                     onDriverClick={() => setSelectedDriver('')}
                                 />
 
@@ -323,7 +367,7 @@ export default function DriverLog() {
                                     <div className="flex items-center justify-between">
                                         <h2 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
                                             <Route className="h-5 w-5 text-amber-700" />
-                                            Today's Runs
+                                            Runs
                                             <span className="text-sm font-normal text-zinc-500">({runs.length})</span>
                                         </h2>
                                         {!showAddRun && (
@@ -338,8 +382,8 @@ export default function DriverLog() {
                                         {showAddRun && (
                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
                                                 <AddRunForm
-                                                    shiftId={activeShift.id}
-                                                    driverName={activeShift.driver_name}
+                                                    shiftId={selectedShift.id}
+                                                    driverName={selectedShift.driver_name}
                                                     onSubmit={(data) => addRunMutation.mutate(data)}
                                                     isLoading={addRunMutation.isPending}
                                                     onCancel={() => setShowAddRun(false)}
@@ -374,7 +418,7 @@ export default function DriverLog() {
                                     )}
                                 </div>
 
-                                <EndShiftForm shift={activeShift} onSubmit={(data) => endShiftMutation.mutate(data)} isLoading={endShiftMutation.isPending} />
+                                <EndShiftForm shift={selectedShift} onSubmit={(data) => endShiftMutation.mutate(data)} isLoading={endShiftMutation.isPending} />
                             </motion.div>
                         )}
                     </AnimatePresence>
