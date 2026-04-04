@@ -262,7 +262,10 @@ function DispatchBoard({ dispatchQuery }) {
         if (region !== selectedRegion) continue;
       }
 
-      const driver = String(o?.driver_name || "Unassigned").trim() || "Unassigned";
+      const driver = String(o?.driver_name || "").trim();
+
+      // ❌ SKIP UNASSIGNED RUNS COMPLETELY
+      if (!driver) continue;
 
       if (!map[driver]) map[driver] = [];
       map[driver].push(o);
