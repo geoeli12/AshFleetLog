@@ -310,8 +310,86 @@ export default function DispatchLog() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }) => api.entities.DispatchOrder.update(id, toDbPayload(data)),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["dispatchOrders"] }),
+    mutationFn: async ({ id, data }) => {
+      return api.entities.DispatchOrder.update(id, toDbPayload(data));
+    },
+
+    onSuccess: async (updated, variables) => {
+
+      queryClient.invalidateQueries({ queryKey: ["dispatchOrders"] });
+
+      try {
+
+        const driverName = String(variables?.data?.delivered_by || "").trim();
+        const previousDriver = String(variables?.data?._previousDeliveredBy || "").trim();
+        const orderDate = toYMD(variables?.data?.date || updated?.date);
+
+        // 🚨 ONLY when driver is newly assigned
+        if (!driverName || previousDriver === driverName) return;
+
+        // 🔍 1. CHECK IF SHIFT EXISTS
+        const existingShiftList = await api.entities.Shift.filter(
+          {
+            driver_name: driverName,
+            shift_date: orderDate
+          },
+          "-created_date",
+          1
+        );
+
+        let shift = Array.isArray(existingShiftList) ? existingShiftList[0] : existingShiftList?.data?.[0];
+
+        // 🆕 2. CREATE SHIFT IF NOT EXISTS
+        if (!shift) {
+          shift = await api.entities.Shift.create({
+            driver_name: driverName,
+            shift_date: orderDate,
+            shift_type: "day",
+            status: "active",
+            start_time: new Date().toISOString(),
+            attendance_status: "present"
+          });
+        }
+
+        // 🆕 3. CHECK IF RUN ALREADY EXISTS
+        const existingRuns = await api.entities.Run.filter(
+          {
+            shift_id: shift.id,
+            trailer_number: variables.data.trailer_number
+          },
+          "-created_date",
+          1
+        );
+
+        const existingRun = Array.isArray(existingRuns)
+          ? existingRuns[0]
+          : existingRuns?.data?.[0];
+
+        if (existingRun) return;
+
+        // 🆕 4. CREATE RUN
+        await api.entities.Run.create({
+          shift_id: shift.id,
+          driver_name: driverName,
+
+          trailer_number: variables.data.trailer_number || "",
+          notes: variables.data.notes || "",
+          eta: variables.data.eta || "",
+          company: variables.data.company || "",
+          item: variables.data.item || "",
+
+          created_date: new Date().toISOString()
+        });
+
+        // 🔄 refresh driver log
+        queryClient.invalidateQueries({ queryKey: ["activeShifts"] });
+        queryClient.invalidateQueries({ queryKey: ["runs"] });
+
+      } catch (err) {
+        console.error("Dispatch → Shift sync failed:", err);
+      }
+    },
+
     onError: (e) => toast.error(e?.message || "Failed to update entry"),
   });
 
@@ -616,7 +694,16 @@ export default function DispatchLog() {
               // Persist full order for this date/region (even if some rows are hidden by search later).
               persistManualOrder((nextLogs || []).map((l) => String(l.id)));
             }}
-            onUpdate={(id, data) => updateMutation.mutateAsync({ id, data })}
+            onUpdate={(id, data, originalRow) =>
+              updateMutation.mutateAsync({
+                id,
+                data: {
+                  ...data,
+                  _previousDeliveredBy: originalRow?.delivered_by || ""
+                }
+              })
+            }
+
             onDelete={(id) => deleteMutation.mutateAsync(id)}
           />
         )}
