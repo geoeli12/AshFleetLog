@@ -24,22 +24,23 @@ export default function Sidebar() {
 
   const primary = [
     { name: "Driver Logs", to: createPageUrl("DriverLog"), icon: ClipboardList },
-    { name: "Shift History", to: createPageUrl("ShiftHistory"), icon: History },
-    { name: "Dispatch Log", to: createPageUrl("DispatchLog"), icon: Truck },
+    { name: "Attd Calendar", to: createPageUrl("Calendar"), icon: CalendarDays },
     { name: "Daily Orders", to: createPageUrl("DailyOrders"), icon: ClipboardCheck },
-    { name: "Load History", to: createPageUrl("LoadHistory"), icon: History },
+    { name: "Dispatch Log", to: createPageUrl("DispatchLog"), icon: Truck },
     { name: "Pick Ups", to: createPageUrl("PickUps"), icon: Package },
-    { name: "Pick Up History", to: createPageUrl("PickupHistory"), icon: History },
+    { name: "Broken Trailers", to: createPageUrl("BrokenTrailers"), icon: Truck },
     { name: "Create a Schedule", to: createPageUrl("Schedule"), icon: Gauge },
+    { name: "Shift History", to: createPageUrl("ShiftHistory"), icon: History },
+    { name: "Load History", to: createPageUrl("LoadHistory"), icon: History },
+    { name: "Pick Up History", to: createPageUrl("PickupHistory"), icon: History },
     { name: "Fuel", to: createPageUrl("FuelDashboard"), icon: Fuel },
     { name: "Fuel History", to: createPageUrl("FuelHistory"), icon: Droplets },
-    { name: "Attd Calendar", to: createPageUrl("Calendar"), icon: CalendarDays },
-    { name: "Drivers", to: createPageUrl("Drivers"), icon: Users },
-    { name: "Customers", to: createPageUrl("Customers"), icon: Users },
-    { name: "Customers PA", to: createPageUrl("CustomersPA"), icon: Truck },
     { name: "Inventory Entry", to: createPageUrl("InventoryEntry"), icon: Package },
     { name: "Inventory Log", to: createPageUrl("InventoryLog"), icon: Package },
     { name: "Invoice", to: createPageUrl("Invoice"), icon: FileText },
+    { name: "Customers", to: createPageUrl("Customers"), icon: Users },
+    { name: "Customers PA", to: createPageUrl("CustomersPA"), icon: Truck },
+    { name: "Drivers", to: createPageUrl("Drivers"), icon: Users },
   ];
 
   useEffect(() => {
