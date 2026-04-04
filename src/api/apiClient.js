@@ -67,6 +67,9 @@ export const api = {
 
     // Daily Orders
     DailyOrder: makeEntity("daily-orders"),
+
+    // Broken Trailers
+    BrokenTrailers: makeEntity("broken-trailers"),
   },
 
   custom: {
