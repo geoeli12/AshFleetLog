@@ -33,7 +33,7 @@ export default function BrokenTrailerPage() {
     queryKey: ["brokenTrailers"],
     queryFn: async () => {
       try {
-        const res = await api.entities.brokenTrailers.list("-date");
+        const res = await api.entities.BrokenTrailers.list("-date");
         return Array.isArray(res) ? res : res?.data || [];
       } catch (e) {
         toast.error("Failed to load trailers");
@@ -43,7 +43,7 @@ export default function BrokenTrailerPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => api.entities.brokenTrailers.create(data),
+    mutationFn: (data) => api.entities.BrokenTrailers.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brokenTrailers"] });
       toast.success("Added");
@@ -51,14 +51,14 @@ export default function BrokenTrailerPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => api.entities.brokenTrailers.update(id, data),
+    mutationFn: ({ id, data }) => api.entities.BrokenTrailers.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brokenTrailers"] });
     }
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => api.entities.brokenTrailers.delete(id),
+    mutationFn: (id) => api.entities.BrokenTrailers.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brokenTrailers"] });
     }
