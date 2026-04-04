@@ -27,6 +27,24 @@ export default function BrokenTrailerPage() {
   const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [region, setRegion] = useState("IL");
 
+  const [form, setForm] = useState({
+    trailer_number: "",
+    issue: "",
+    reported_by: "",
+    customer: "",
+    status: "",
+    fixed_date: "",
+    notes: "",
+    files: []
+  });
+
+  const handleChange = (field, value) => {
+    setForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
   const queryClient = useQueryClient();
 
   const { data, isLoading, refetch } = useQuery({
@@ -159,46 +177,101 @@ export default function BrokenTrailerPage() {
         {/* ADD FORM */}
         <div className="bg-white p-4 rounded-xl border space-y-2">
 
-          <Input placeholder="Trailer #" id="trailer" />
-          <Input placeholder="Issue" id="issue" />
-          <Input placeholder="Reported By" id="reported" />
-          <Input placeholder="Customer" id="customer" />
-          <Input placeholder="Status" id="status" />
-          <Input type="date" id="fixedDate" />
-          <Input placeholder="Notes" id="notes" />
+          <Input
+            placeholder="Trailer #"
+            value={form.trailer_number}
+            onChange={(e) => handleChange("trailer_number", e.target.value)}
+          />
 
-          {/* FILE UPLOAD */}
-          <Input type="file" id="fileUpload" multiple />
+          <Input
+            placeholder="Issue"
+            value={form.issue}
+            onChange={(e) => handleChange("issue", e.target.value)}
+          />
+
+          <Input
+            placeholder="Reported By"
+            value={form.reported_by}
+            onChange={(e) => handleChange("reported_by", e.target.value)}
+          />
+
+          <Input
+            placeholder="Customer"
+            value={form.customer}
+            onChange={(e) => handleChange("customer", e.target.value)}
+          />
+
+          <Input
+            placeholder="Status"
+            value={form.status}
+            onChange={(e) => handleChange("status", e.target.value)}
+          />
+
+          <Input
+            type="date"
+            value={form.fixed_date}
+            onChange={(e) => handleChange("fixed_date", e.target.value)}
+          />
+
+          <Input
+            placeholder="Notes"
+            value={form.notes}
+            onChange={(e) => handleChange("notes", e.target.value)}
+          />
+
+          <Input
+            type="file"
+            multiple
+            onChange={(e) => handleChange("files", Array.from(e.target.files))}
+          />
 
           <Button
+            disabled={createMutation.isPending}
             onClick={async () => {
 
-              const fileInput = document.getElementById("fileUpload");
-              const files = fileInput.files;
+              if (createMutation.isPending) return; // 🔒 prevent duplicates
 
-              const uploadedFiles = [];
+              try {
 
-              for (let f of files) {
-                const res = await api.uploadFile(f);
-                uploadedFiles.push(res.url);
+                const uploadedFiles = [];
+
+                for (let f of form.files) {
+                  const res = await api.uploadFile(f);
+                  uploadedFiles.push(res.url);
+                }
+
+                await createMutation.mutateAsync({
+                  trailer_number: form.trailer_number,
+                  issue: form.issue,
+                  reported_by: form.reported_by,
+                  customer: form.customer,
+                  status: form.status,
+                  fixed_date: form.fixed_date,
+                  notes: form.notes,
+                  region,
+                  date: selectedDate,
+                  attachments: uploadedFiles
+                });
+
+                // ✅ CLEAR FORM
+                setForm({
+                  trailer_number: "",
+                  issue: "",
+                  reported_by: "",
+                  customer: "",
+                  status: "",
+                  fixed_date: "",
+                  notes: "",
+                  files: []
+                });
+
+              } catch (err) {
+                toast.error("Failed to save");
               }
-
-              await createMutation.mutateAsync({
-                trailer_number: document.getElementById("trailer").value,
-                issue: document.getElementById("issue").value,
-                reported_by: document.getElementById("reported").value,
-                customer: document.getElementById("customer").value,
-                status: document.getElementById("status").value,
-                fixed_date: document.getElementById("fixedDate").value,
-                notes: document.getElementById("notes").value,
-                region,
-                date: selectedDate,
-                attachments: uploadedFiles
-              });
 
             }}
           >
-            Add Trailer Issue
+            {createMutation.isPending ? "Saving..." : "Add Trailer Issue"}
           </Button>
 
         </div>
