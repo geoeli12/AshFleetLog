@@ -20,6 +20,7 @@ import customersIl from "./routes/customersIl.js";
 import customersPa from "./routes/customersPa.js";
 import inventoryEntries from "./routes/inventoryEntries.js";
 import customerPrices from "./routes/customerPrices.js";
+import brokenTrailers from "./routes/brokenTrailers.js";
 
 await initDb();
 
@@ -68,6 +69,7 @@ app.use("/api/customers-il", customersIl);
 app.use("/api/customers-pa", customersPa);
 app.use("/api/inventory-entries", inventoryEntries);
 app.use("/api/customer-prices", customerPrices);
+app.use("/api/broken-trailers", brokenTrailers);
 
 // --- Static hosting (so you can use the app by URL) ---
 // In production we serve the Vite build (dist) from the same URL as the API.
