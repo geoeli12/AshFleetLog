@@ -87,8 +87,9 @@ export default function DriverLog() {
     const filteredShifts = shiftsByDate;
 
     const selectedShift = selectedDriver
-        ? filteredShifts.find(s => s.driver_name === selectedDriver)
-        : null;
+      ? allActiveShifts.find(s => s.driver_name === selectedDriver) 
+        || filteredShifts.find(s => s.driver_name === selectedDriver)
+      : null;
 
     const activeShift = selectedDriver 
         ? allActiveShifts.find(shift => shift.driver_name === selectedDriver)
@@ -96,9 +97,18 @@ export default function DriverLog() {
 
     const { data: runs = [], isLoading: runsLoading } = useQuery({
         queryKey: ['runs', selectedShift?.id],
-        queryFn: () => selectedShift 
-            ? api.entities.Run.filter({ shift_id: selectedShift.id }, '-created_date') 
-            : [],
+        queryFn: async () => {
+          if (!selectedShift) return [];
+
+          const results = await api.entities.Run.filter({}, '-created_date');
+
+          const runsArray = Array.isArray(results) ? results : results?.data || [];
+
+          return runsArray.filter(r =>
+            String(r.shift_id || r.shift || r.shiftId) === String(selectedShift.id)
+          );
+        },
+
         enabled: !!selectedShift
     });
 
