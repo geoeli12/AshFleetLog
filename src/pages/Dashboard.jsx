@@ -238,8 +238,21 @@ function DispatchBoard({ dispatchQuery }) {
 
   const [selectedRegion, setSelectedRegion] = useState("ALL");
 
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const d = new Date();
+    return d.toISOString().split("T")[0];
+  });
+
+  const changeDate = (days) => {
+    const d = new Date(selectedDate);
+    d.setDate(d.getDate() + days);
+    setSelectedDate(d.toISOString().split("T")[0]);
+  };
+
   const groupedByDriver = useMemo(() => {
-    const orders = Array.isArray(dispatchQuery.data) ? dispatchQuery.data : [];
+    const orders = (Array.isArray(dispatchQuery.data) ? dispatchQuery.data : [])
+      .filter(o => o?.date === selectedDate);
+
     const map = {};
 
     for (const o of orders) {
@@ -256,7 +269,7 @@ function DispatchBoard({ dispatchQuery }) {
     }
 
     return map;
-  }, [dispatchQuery.data, selectedRegion]);
+  }, [dispatchQuery.data, selectedRegion, selectedDate]);
 
   const handleDragStart = (run, fromDriver) => {
     setDragItem({ run, fromDriver });
@@ -280,6 +293,19 @@ function DispatchBoard({ dispatchQuery }) {
 
   return (
     <div className="mt-6 space-y-4">
+
+      <div className="flex items-center gap-3 mb-2">
+        <button onClick={() => changeDate(-1)} className="px-2 py-1 rounded bg-slate-300 text-black">←</button>
+
+        <input
+          type="date"
+          value={selectedDate}
+          onChange={(e) => setSelectedDate(e.target.value)}
+          className="px-2 py-1 rounded border text-black"
+        />
+
+        <button onClick={() => changeDate(1)} className="px-2 py-1 rounded bg-slate-300 text-black">→</button>
+      </div>
 
       <div className="flex gap-2 mb-2">
 
@@ -355,7 +381,7 @@ function DispatchBoard({ dispatchQuery }) {
                   onClick={() => handleClickRun(r)}
                   className={`px-3 py-2 rounded-full text-xs text-white ${color} shadow cursor-pointer`}
                 >
-                  {r?.company || "Run"} {r?.trailer_number ? `• ${r.trailer_number}` : ""}
+                  {r?.customer || r?.company || "No Name"}
                 </div>
               );
             })}
