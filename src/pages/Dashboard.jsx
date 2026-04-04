@@ -208,7 +208,6 @@ export default function Dashboard() {
           <Section>
             <div className="flex flex-col lg:flex-row gap-6">
 
-              {/* RIGHT CONTENT ONLY NOW */}
               <div className="flex-1">
 
                 <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
@@ -219,7 +218,6 @@ export default function Dashboard() {
                   <StatPill label="This month" value={counts.monthCount} />
                 </div>
 
-                {/* ===== NEW DISPATCH BOARD (ADDED ONLY) ===== */}
                 <DispatchBoard dispatchQuery={dispatchQuery} />
 
               </div>
@@ -232,26 +230,33 @@ export default function Dashboard() {
   );
 }
 
-/* ===== NEW COMPONENT (ADDED ONLY) ===== */
-
 function DispatchBoard({ dispatchQuery }) {
 
   const [dragItem, setDragItem] = useState(null);
   const [dragOverDriver, setDragOverDriver] = useState(null);
   const [selectedRun, setSelectedRun] = useState(null);
 
+  const [selectedRegion, setSelectedRegion] = useState("ALL");
+
   const groupedByDriver = useMemo(() => {
     const orders = Array.isArray(dispatchQuery.data) ? dispatchQuery.data : [];
     const map = {};
 
     for (const o of orders) {
+
+      if (selectedRegion !== "ALL") {
+        const region = String(o?.region || "").toUpperCase();
+        if (region !== selectedRegion) continue;
+      }
+
       const driver = String(o?.driver_name || "Unassigned").trim() || "Unassigned";
+
       if (!map[driver]) map[driver] = [];
       map[driver].push(o);
     }
 
     return map;
-  }, [dispatchQuery.data]);
+  }, [dispatchQuery.data, selectedRegion]);
 
   const handleDragStart = (run, fromDriver) => {
     setDragItem({ run, fromDriver });
@@ -259,14 +264,8 @@ function DispatchBoard({ dispatchQuery }) {
 
   const handleDrop = (toDriver) => {
     if (!dragItem) return;
-
-    const { run, fromDriver } = dragItem;
-    if (fromDriver === toDriver) return;
-
     setDragItem(null);
     setDragOverDriver(null);
-
-    console.log("Move run:", run.id, "to", toDriver);
   };
 
   const handleDragOver = (e, driver) => {
@@ -281,6 +280,43 @@ function DispatchBoard({ dispatchQuery }) {
 
   return (
     <div className="mt-6 space-y-4">
+
+      <div className="flex gap-2 mb-2">
+
+        <button
+          onClick={() => setSelectedRegion("ALL")}
+          className={`px-3 py-1 rounded-full text-xs ${
+            selectedRegion === "ALL"
+              ? "bg-amber-400 text-black"
+              : "bg-white/10 text-white"
+          }`}
+        >
+          ALL
+        </button>
+
+        <button
+          onClick={() => setSelectedRegion("IL")}
+          className={`px-3 py-1 rounded-full text-xs ${
+            selectedRegion === "IL"
+              ? "bg-amber-400 text-black"
+              : "bg-white/10 text-white"
+          }`}
+        >
+          IL
+        </button>
+
+        <button
+          onClick={() => setSelectedRegion("PA")}
+          className={`px-3 py-1 rounded-full text-xs ${
+            selectedRegion === "PA"
+              ? "bg-amber-400 text-black"
+              : "bg-white/10 text-white"
+          }`}
+        >
+          PA
+        </button>
+
+      </div>
 
       {Object.entries(groupedByDriver).map(([driver, runs]) => (
 
