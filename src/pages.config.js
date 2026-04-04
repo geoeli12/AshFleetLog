@@ -73,6 +73,7 @@ import InventoryEntry from './pages/InventoryEntry';
 import InventoryLog from './pages/InventoryLog';
 import Invoice from './pages/Invoice';
 import __Layout from './Layout.jsx';
+import BrokenTrailer from './pages/BrokenTrailer';
 
 
 export const PAGES = {
@@ -96,6 +97,7 @@ export const PAGES = {
     "FuelHistory": FuelHistory,
     "AddReading": AddReading,
     "AddRefill": AddRefill,
+    "BrokenTrailer": BrokenTrailer,
 }
 
 export const pagesConfig = {
