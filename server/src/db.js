@@ -92,6 +92,25 @@ const COLLECTIONS = {
     ],
   },
 
+  broken_trailers: {
+    table: "broken_trailers",
+    primaryKey: "id",
+    allowed: [
+      "id",
+      "date",
+      "region",
+      "trailer_number",
+      "issue",
+      "reported_by",
+      "customer",
+      "status",
+      "fixed_date",
+      "notes",
+      "attachments",
+      "created_at",
+    ],
+  },
+
   daily_orders: {
     table: "daily_orders",
     primaryKey: "id",
