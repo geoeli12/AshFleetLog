@@ -331,17 +331,19 @@ export default function DispatchLog() {
         const existingShiftList = await api.entities.Shift.filter(
           {
             driver_name: driverName,
-            shift_date: orderDate
+            shift_date: orderDate,
+            status: "active"
           },
           "-created_date",
           1
         );
 
-        let shift = Array.isArray(existingShiftList) ? existingShiftList[0] : existingShiftList?.data?.[0];
+        let shift = Array.isArray(existingShiftList)
+          ? existingShiftList[0]
+          : existingShiftList?.data?.[0];
 
-        // 🆕 2. CREATE SHIFT IF NOT EXISTS
         if (!shift) {
-          shift = await api.entities.Shift.create({
+          const createdShift = await api.entities.Shift.create({
             driver_name: driverName,
             shift_date: orderDate,
             shift_type: "day",
@@ -349,9 +351,13 @@ export default function DispatchLog() {
             start_time: new Date().toISOString(),
             attendance_status: "present"
           });
+
+          shift = createdShift?.id
+            ? createdShift
+            : createdShift?.data;
         }
 
-        // 🆕 3. CHECK IF RUN ALREADY EXISTS
+        // 🆕 2. CHECK IF RUN ALREADY EXISTS
         const existingRuns = await api.entities.Run.filter(
           {
             shift_id: shift.id,
@@ -367,7 +373,7 @@ export default function DispatchLog() {
 
         if (existingRun) return;
 
-        // 🆕 4. CREATE RUN
+        // 🆕 3. CREATE RUN
         await api.entities.Run.create({
           shift_id: shift.id,
           driver_name: driverName,
