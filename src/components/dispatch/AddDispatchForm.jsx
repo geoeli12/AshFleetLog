@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { format } from 'date-fns';
-
+import { useQuery } from "@tanstack/react-query";
 import { api } from "@/api/apiClient";
 
 const unwrapListResult = (list) => {
@@ -60,67 +60,41 @@ export default function AddDispatchForm({ onAdd, defaultDate, region }) {
   const ignoreCompanyBlurRef = useRef(false);
 
   // Customers from Supabase (via server entity routes)
-  const [customersIL, setCustomersIL] = useState([]);
-  const [customersPA, setCustomersPA] = useState([]);
+  const { data: customersIL = [] } = useQuery({
+    queryKey: ["customersIL"],
+    queryFn: async () => {
+      const res = await api.entities.CustomerIL.list("customer");
+      return unwrapListResult(res);
+    },
+  });
 
-  useEffect(() => {
-    let alive = true;
+  const { data: customersPA = [] } = useQuery({
+    queryKey: ["customersPA"],
+    queryFn: async () => {
+      const res = await api.entities.CustomerPA.list("customer");
+      return unwrapListResult(res);
+    },
+  });
 
-    const load = async () => {
-      try {
-        const [il, pa] = await Promise.all([
-          api.entities.CustomerIL.list('customer').catch(() => []),
-          api.entities.CustomerPA.list('customer').catch(() => [])
-        ]);
-
-        if (!alive) return;
-        setCustomersIL(unwrapListResult(il));
-        setCustomersPA(unwrapListResult(pa));
-      } catch {
-        // ignore
-      }
-    };
-
-    load();
-    return () => { alive = false; };
-  }, []);
-
-  const customerDirectory = useMemo(() => {
-    const normalize = (v) => (v ?? '').toString().trim();
-
-    const withMeta = (rows, region) =>
-      (rows || []).map((r, idx) => ({
-        _key: `${region}-${r?.id ?? idx}`,
-        region,
-        customer: normalize(r?.customer),
-        address: normalize(r?.address),
-        receivingHours: normalize(r?.receivingHours),
-        receivingNotes: normalize(r?.receivingNotes),
-        eta: normalize(r?.eta),
+  const customers = useMemo(() => {
+    const withRegion = (rows, region) =>
+      (rows || []).map(r => ({
+        ...r,
+        region
       }));
 
-    return [...withMeta(customersIL, 'IL'), ...withMeta(customersPA, 'PA')].filter(r => r.customer);
+    return [
+      ...withRegion(customersIL, "IL"),
+      ...withRegion(customersPA, "PA")
+    ];
   }, [customersIL, customersPA]);
 
-  const normalizeCompanyKey = (v) =>
-    (v ?? '')
-      .toString()
-      .trim()
-      .toLowerCase()
-      // Strip leading numeric IDs like "12 " from customer names
-      .replace(/^\d+\s+/, '')
-      .replace(/^[-–—\s]+/, '')
-      .trim();
-
   const findCompanyMatch = (companyName) => {
-    const q = normalizeCompanyKey(companyName);
+    const q = (companyName || '').toLowerCase().trim();
     if (!q) return null;
 
-    return (
-      customerDirectory.find(r => normalizeCompanyKey(r.customer) === q) ||
-      customerDirectory.find(r => normalizeCompanyKey(r.customer).startsWith(q)) ||
-      customerDirectory.find(r => normalizeCompanyKey(r.customer).includes(q)) ||
-      null
+    return customers.find(c =>
+      String(c?.customer || "").toLowerCase() === q
     );
   };
 
@@ -136,13 +110,16 @@ export default function AddDispatchForm({ onAdd, defaultDate, region }) {
     return (match.eta || '').trim();
   };
 
-  const applyCompanyPick = (row) => {
-    const dock = (row?.receivingHours || row?.receivingNotes || '').trim();
+  const applyCompanyPick = (cust) => {
+    const name = String(cust?.customer || "");
+    const dock = String(cust?.receivingHours || cust?.receivingNotes || "").trim();
+    const eta = String(cust?.eta || "").trim();
+
     setForm(prev => ({
       ...prev,
-      company: row.customer,
+      company: name,
       dock_hours: dock || prev.dock_hours,
-      eta: (row?.eta || '').trim() || prev.eta,
+      eta: eta || prev.eta,
     }));
   };
 
@@ -165,7 +142,10 @@ export default function AddDispatchForm({ onAdd, defaultDate, region }) {
     // If a region toggle is selected, prefer that region first, but still allow cross-region matches.
     const activeRegion = (region || form.region || '').toString().trim().toUpperCase();
 
-    const matches = customerDirectory.filter(r => r.customer.toLowerCase().includes(q));
+    const matches = customers.filter(c =>
+      String(c?.customer || "").toLowerCase().includes(q)
+    );
+
     matches.sort((a, b) => {
       const aPri = (a.region === activeRegion) ? 0 : 1;
       const bPri = (b.region === activeRegion) ? 0 : 1;
@@ -174,7 +154,7 @@ export default function AddDispatchForm({ onAdd, defaultDate, region }) {
     });
 
     return matches.slice(0, 10);
-  }, [form.company, customerDirectory, region, form.region]);
+  }, [form.company, customers, region, form.region]);
 
   // Bulk Paste (column-based)
   const [bulkCols, setBulkCols] = useState({ ...exampleRow });
