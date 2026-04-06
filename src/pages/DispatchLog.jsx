@@ -354,10 +354,29 @@ export default function DispatchLog() {
               : existingRuns?.data || [];
 
             // 🎯 Match EXACT run (trailer + company only)
-            const matchingRuns = runsArray.filter(r =>
-              String(r.trailer_number || "") === String(variables.data.trailer_number || "") &&
-              String(r.company || "") === String(variables.data.company || "")
-            );
+            const newTrailer = String(variables.data.trailer_number || "").trim();
+            const newCompany = String(variables.data.company || "").trim();
+            const newCustomer = String(variables.data.customer || variables.data.customer_name || "").trim();
+            const newDate = String(orderDate || "").trim();
+
+            const matchingRuns = runsArray.filter(r => {
+
+              const rTrailer = String(r.trailer_number || "").trim();
+              const rCompany = String(r.company || "").trim();
+              const rCustomer = String(r.customer || r.customer_name || "").trim();
+              const rDate = String(r.date || "").slice(0, 10);
+
+              const trailerMatch = rTrailer === newTrailer;
+              const dateMatch = !rDate || rDate === newDate;
+
+              const nameMatch =
+                (newCustomer && rCustomer && rCustomer === newCustomer) ||
+                (newCompany && rCompany && rCompany === newCompany) ||
+                (newCustomer && rCompany && rCompany === newCustomer) ||
+                (newCompany && rCustomer && rCustomer === newCompany);
+
+              return trailerMatch && dateMatch && nameMatch;
+            });
 
             // ❌ DELETE ONLY MATCHING RUNS
             for (const run of matchingRuns) {
@@ -419,16 +438,37 @@ export default function DispatchLog() {
         // 🆕 2. CHECK IF RUN ALREADY EXISTS
         const existingRuns = await api.entities.Run.filter(
           {
-            shift_id: shift.id,
-            trailer_number: variables.data.trailer_number
-          },
-          "-created_date",
-          1
+            shift_id: shift.id
+          }
         );
 
-        const existingRun = Array.isArray(existingRuns)
-          ? existingRuns[0]
-          : existingRuns?.data?.[0];
+        const runsArray = Array.isArray(existingRuns)
+          ? existingRuns
+          : existingRuns?.data || [];
+
+        const newTrailer = String(variables.data.trailer_number || "").trim();
+        const newCompany = String(variables.data.company || "").trim();
+        const newCustomer = String(variables.data.customer || variables.data.customer_name || "").trim();
+        const newDate = String(orderDate || "").trim();
+
+        const existingRun = runsArray.find(r => {
+
+          const rTrailer = String(r.trailer_number || "").trim();
+          const rCompany = String(r.company || "").trim();
+          const rCustomer = String(r.customer || r.customer_name || "").trim();
+          const rDate = String(r.date || "").slice(0, 10);
+
+          const trailerMatch = rTrailer === newTrailer;
+          const dateMatch = !rDate || rDate === newDate;
+
+          const nameMatch =
+            (newCustomer && rCustomer && rCustomer === newCustomer) ||
+            (newCompany && rCompany && rCompany === newCompany) ||
+            (newCustomer && rCompany && rCompany === newCustomer) ||
+            (newCompany && rCustomer && rCustomer === newCompany);
+
+          return trailerMatch && dateMatch && nameMatch;
+        });
 
         if (existingRun) return;
 
@@ -440,8 +480,14 @@ export default function DispatchLog() {
           trailer_number: variables.data.trailer_number || "",
           notes: variables.data.notes || "",
           eta: variables.data.eta || "",
-          company: variables.data.company || "",
+
+          // 🔥 fallback logic
+          company: variables.data.company || variables.data.customer_name || "",
+          customer: variables.data.customer || variables.data.customer_name || "",
+
           item: variables.data.item || "",
+
+          date: orderDate, // 🔥 REQUIRED for your new match logic
 
           created_date: new Date().toISOString()
         });

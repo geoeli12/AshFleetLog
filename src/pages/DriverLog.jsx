@@ -237,8 +237,20 @@ export default function DriverLog() {
                         ←
                     </Button>
 
-                    <div className="text-lg font-semibold text-zinc-800">
-                        {format(selectedDate, "EEEE, MMM d yyyy")}
+                    {/* ✅ DATE PICKER */}
+                    <div className="flex flex-col items-center">
+                        
+                        <input
+                            type="date"
+                            value={format(selectedDate, "yyyy-MM-dd")}
+                            onChange={(e) => setSelectedDate(new Date(e.target.value))}
+                            className="border rounded-lg px-3 py-1 text-sm"
+                        />
+
+                        <div className="text-lg font-semibold text-zinc-800 mt-1">
+                            {format(selectedDate, "EEEE, MMM d yyyy")}
+                        </div>
+
                     </div>
 
                     <Button
