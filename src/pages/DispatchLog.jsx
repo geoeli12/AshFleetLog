@@ -368,10 +368,14 @@ export default function DispatchLog() {
               ? existingRuns
               : existingRuns?.data || [];
 
-            // 🎯 Match EXACT run (trailer + company only)
-            const newTrailer = String(variables.data.trailer_number || "").trim();
-            const newCompany = String(variables.data.company || "").trim();
-            const newCustomer = String(variables.data.customer || variables.data.customer_name || "").trim();
+            // 🎯 Match EXACT run GET FULL ORDER FROM DB
+            const fullOrderRes = await api.entities.DispatchOrder.get(id);
+            const fullOrder = fullOrderRes?.data || fullOrderRes;
+
+            // 🔥 USE FULL DATA (NOT variables.data)
+            const newTrailer = String(fullOrder.trailer_number || "").trim();
+            const newCompany = String(fullOrder.customer || fullOrder.company || "").trim();
+            const newCustomer = newCompany;
             const newDate = String(orderDate || "").trim();
 
             const matchingRuns = runsArray.filter(r => {
@@ -461,9 +465,14 @@ export default function DispatchLog() {
           ? existingRuns
           : existingRuns?.data || [];
 
-        const newTrailer = String(variables.data.trailer_number || "").trim();
-        const newCompany = String(variables.data.company || "").trim();
-        const newCustomer = String(variables.data.customer || variables.data.customer_name || "").trim();
+        // 🔥 GET FULL ORDER FROM DB
+        const fullOrderRes = await api.entities.DispatchOrder.get(id);
+        const fullOrder = fullOrderRes?.data || fullOrderRes;
+
+        // 🔥 USE FULL DATA (NOT variables.data)
+        const newTrailer = String(fullOrder.trailer_number || "").trim();
+        const newCompany = String(fullOrder.customer || fullOrder.company || "").trim();
+        const newCustomer = newCompany;
         const newDate = String(orderDate || "").trim();
 
         const existingRun = runsArray.find(r => {
@@ -496,7 +505,7 @@ export default function DispatchLog() {
 
           const parsed = [...il, ...pa];
 
-          const customerName = String(variables.data.company || "").toLowerCase();
+          const customerName = String(fullOrder.customer || fullOrder.company || "").toLowerCase();
 
           customerData = parsed.find(c =>
             String(c.customer || "").toLowerCase() === customerName
@@ -509,27 +518,30 @@ export default function DispatchLog() {
         const address = customerData?.address || "";
         const city = parseCityFromAddress(address);
 
+        console.log("FULL ORDER DATA:", fullOrder);
+
         // 🆕 3. CREATE RUN
         await api.entities.Run.create({
           shift_id: shift.id,
           driver_name: driverName,
 
-          trailer_number: variables.data.trailer_number || "",
-          notes: variables.data.notes || "",
-          eta: variables.data.eta || "",
+          // 🔥 USE FULL ORDER FOR EVERYTHING
+          trailer_number: fullOrder.trailer_number || "",
+          notes: fullOrder.notes || "",
+          eta: fullOrder.eta || "",
 
-          company: variables.data.company || "",
-          customer: variables.data.company || "",
+          company: fullOrder.customer || fullOrder.company || "",
+          customer: fullOrder.customer || fullOrder.company || "",
 
-          item: variables.data.item || "",
+          item: fullOrder.item || "",
 
-          // ✅ MATCHES YOUR FORM LOGIC
-          city: city || variables.data.city || "",
-          address: address || "",
+          // ✅ YOUR CITY LOGIC
+          city: city || "",
 
-          load_type: variables.data.load_type || "",
+          load_type: fullOrder.load_type || "",
 
           date: orderDate,
+
           created_date: new Date().toISOString()
         });
 
