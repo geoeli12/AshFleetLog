@@ -47,6 +47,21 @@ function makePendingBolToken(dateYmd) {
   return `${PENDING_BOL_PREFIX}${dateYmd}:${Date.now()}:${rand}`;
 }
 
+function parseCityFromAddress(address) {
+  if (!address) return '';
+
+  const raw = String(address).trim();
+  if (!raw) return '';
+
+  const parts = raw.split(',').map(s => s.trim()).filter(Boolean);
+
+  if (parts.length >= 3) {
+    return parts[parts.length - 2] || '';
+  }
+
+  return '';
+}
+
 function normalizeIncomingUiRow(ui, fallbackDateYmd) {
   // Defensive normalization for bulk-paste rows.
   // Common issue: Excel paste includes a leading index column (1,2,3...), shifting everything right.
@@ -472,6 +487,28 @@ export default function DispatchLog() {
 
         if (existingRun) return;
 
+        // 🔥 3a. GET CUSTOMER FROM LOCAL STORAGE (same as AddRunForm)
+        let customerData = null;
+
+        try {
+          const il = JSON.parse(localStorage.getItem("customers_il") || "[]");
+          const pa = JSON.parse(localStorage.getItem("customers_pa") || "[]");
+
+          const parsed = [...il, ...pa];
+
+          const customerName = String(variables.data.company || "").toLowerCase();
+
+          customerData = parsed.find(c =>
+            String(c.customer || "").toLowerCase() === customerName
+          );
+        } catch (e) {
+          console.error("Customer lookup failed", e);
+        }
+
+        // 🔥 3b. EXTRACT CITY (same logic as AddRunForm)
+        const address = customerData?.address || "";
+        const city = parseCityFromAddress(address);
+
         // 🆕 3. CREATE RUN
         await api.entities.Run.create({
           shift_id: shift.id,
@@ -481,14 +518,18 @@ export default function DispatchLog() {
           notes: variables.data.notes || "",
           eta: variables.data.eta || "",
 
-          // 🔥 fallback logic
-          company: variables.data.company || variables.data.customer_name || "",
-          customer: variables.data.customer || variables.data.customer_name || "",
+          company: variables.data.company || "",
+          customer: variables.data.company || "",
 
           item: variables.data.item || "",
 
-          date: orderDate, // 🔥 REQUIRED for your new match logic
+          // ✅ MATCHES YOUR FORM LOGIC
+          city: city || variables.data.city || "",
+          address: address || "",
 
+          load_type: variables.data.load_type || "",
+
+          date: orderDate,
           created_date: new Date().toISOString()
         });
 
