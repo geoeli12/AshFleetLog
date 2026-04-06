@@ -338,6 +338,7 @@ export default function DispatchLog() {
         const driverName = String(variables?.data?.delivered_by || "").trim();
         const previousDriver = String(variables?.data?._previousDeliveredBy || "").trim();
         const orderDate = toYMD(variables?.data?.date || updated?.date);
+        const dispatchId = updated?.id || variables?.id;
 
         // 🚨 HANDLE DRIVER REMOVAL FIRST
         if (!driverName && previousDriver) {
@@ -378,24 +379,9 @@ export default function DispatchLog() {
             const newCustomer = newCompany;
             const newDate = String(orderDate || "").trim();
 
-            const matchingRuns = runsArray.filter(r => {
-
-              const rTrailer = String(r.trailer_number || "").trim();
-              const rCompany = String(r.company || "").trim();
-              const rCustomer = String(r.customer || r.customer_name || "").trim();
-              const rDate = String(r.date || "").slice(0, 10);
-
-              const trailerMatch = rTrailer === newTrailer;
-              const dateMatch = !rDate || rDate === newDate;
-
-              const nameMatch =
-                (newCustomer && rCustomer && rCustomer === newCustomer) ||
-                (newCompany && rCompany && rCompany === newCompany) ||
-                (newCustomer && rCompany && rCompany === newCustomer) ||
-                (newCompany && rCustomer && rCustomer === newCompany);
-
-              return trailerMatch && dateMatch && nameMatch;
-            });
+            const matchingRuns = runsArray.filter(r =>
+              String(r.dispatch_id) === String(dispatchId)
+            );
 
             // ❌ DELETE ONLY MATCHING RUNS
             for (const run of matchingRuns) {
@@ -422,7 +408,12 @@ export default function DispatchLog() {
         }
 
         // 🚨 ONLY when driver is newly assigned
-        if (!driverName || previousDriver === driverName) return;
+        if (!driverName) return;
+
+        const isNewAssignment = !previousDriver && driverName;
+        const isDriverChanged = previousDriver && previousDriver !== driverName;
+
+        if (!isNewAssignment && !isDriverChanged) return;
 
         // 🔍 1. CHECK IF SHIFT EXISTS
         const existingShiftList = await api.entities.Shift.filter(
@@ -475,24 +466,9 @@ export default function DispatchLog() {
         const newCustomer = newCompany;
         const newDate = String(orderDate || "").trim();
 
-        const existingRun = runsArray.find(r => {
-
-          const rTrailer = String(r.trailer_number || "").trim();
-          const rCompany = String(r.company || "").trim();
-          const rCustomer = String(r.customer || r.customer_name || "").trim();
-          const rDate = String(r.date || "").slice(0, 10);
-
-          const trailerMatch = rTrailer === newTrailer;
-          const dateMatch = !rDate || rDate === newDate;
-
-          const nameMatch =
-            (newCustomer && rCustomer && rCustomer === newCustomer) ||
-            (newCompany && rCompany && rCompany === newCompany) ||
-            (newCustomer && rCompany && rCompany === newCustomer) ||
-            (newCompany && rCustomer && rCustomer === newCompany);
-
-          return trailerMatch && dateMatch && nameMatch;
-        });
+        const existingRun = runsArray.find(r =>
+          String(r.dispatch_id) === String(dispatchId)
+        );
 
         if (existingRun) return;
 
@@ -524,6 +500,8 @@ export default function DispatchLog() {
         await api.entities.Run.create({
           shift_id: shift.id,
           driver_name: driverName,
+
+          dispatch_id: dispatchId, // 🔥 THIS IS THE FIX
 
           // 🔥 USE FULL ORDER FOR EVERYTHING
           trailer_number: fullOrder.trailer_number || "",
