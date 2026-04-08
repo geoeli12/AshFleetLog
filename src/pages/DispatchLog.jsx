@@ -481,8 +481,13 @@ export default function DispatchLog() {
           // String(r.driver_name || "") === String(driverName || "")
         // );
 
+        // const existingRun = runsArray.find(r =>
+          // String(r.dispatch_id || "") === String(dispatchId || "")
+        // );
+
         const existingRun = runsArray.find(r =>
-          String(r.dispatch_id || "") === String(dispatchId || "")
+          r.dispatch_id && dispatchId &&
+          String(r.dispatch_id) === String(dispatchId)
         );
 
         if (existingRun) return;
@@ -514,18 +519,15 @@ export default function DispatchLog() {
           shift_id: shift.id,
           driver_name: driverName,
 
-          // 🔥 CRITICAL LINK
           dispatch_id: dispatchId,
 
-          // 🔥 MATCH YOUR SYSTEM
+          // ✅ MUST MATCH RUNS TABLE
           run_date: orderDate,
 
           customer_name: fullOrder.customer || "",
           trailer_dropped: fullOrder.trailer_number || "",
 
           notes: fullOrder.notes || "",
-          eta: fullOrder.eta || "",
-
           city: city || "",
 
           load_type: fullOrder.item || "",
