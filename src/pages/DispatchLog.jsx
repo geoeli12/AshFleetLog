@@ -371,9 +371,15 @@ export default function DispatchLog() {
               ? existingRuns
               : existingRuns?.data || [];
 
+            const orderFromDb = await api.entities.DispatchOrder.get(dispatchId);
+            const fullOrder = orderFromDb?.data || orderFromDb;
+
             // 🎯 Match EXACT run GET FULL ORDER FROM DB
             const matchingRuns = runsArray.filter(r =>
-              String(r.dispatch_id) === String(dispatchId)
+              String(r.trailer_dropped || "") === String(fullOrder.trailer_number || "") &&
+              String(r.customer_name || "") === String(fullOrder.customer || fullOrder.company || "") &&
+              String(r.run_date || "") === String(orderDate || "") &&
+              String(r.driver_name || "") === String(previousDriver || "")
             );
 
             // ❌ DELETE ONLY MATCHING RUNS
@@ -447,10 +453,10 @@ export default function DispatchLog() {
           : existingRuns?.data || [];
 
         // 🔥 GET FULL ORDER FROM DB (FIX)
-        // const orderFromDb = await api.entities.DispatchOrder.get(dispatchId);
-        // const fullOrder = orderFromDb?.data || orderFromDb;
+        const orderFromDb = await api.entities.DispatchOrder.get(dispatchId);
+        const fullOrder = orderFromDb?.data || orderFromDb;
 
-        const fullOrder = updated?.data || updated;
+        // const fullOrder = updated?.data || updated;
 
         // 🔥 USE FULL DATA (NOT variables.data)
         const newTrailer = String(fullOrder.trailer_number || "").trim();
@@ -459,7 +465,10 @@ export default function DispatchLog() {
         const newDate = String(orderDate || "").trim();
 
         const existingRun = runsArray.find(r =>
-          String(r.dispatch_id) === String(dispatchId)
+          String(r.trailer_dropped || "") === String(fullOrder.trailer_number || "") &&
+          String(r.customer_name || "") === String(fullOrder.customer || fullOrder.company || "") &&
+          String(r.run_date || "") === String(orderDate || "") &&
+          String(r.driver_name || "") === String(driverName || "")
         );
 
         if (existingRun) return;
@@ -486,33 +495,20 @@ export default function DispatchLog() {
         const address = customerData?.address || "";
         const city = parseCityFromAddress(address);
 
-        console.log("FULL ORDER DATA:", fullOrder);
-
         // 🆕 3. CREATE RUN
         await api.entities.Run.create({
           shift_id: shift.id,
           driver_name: driverName,
+          run_date: orderDate,
 
-          dispatch_id: dispatchId, // 🔥 THIS IS THE FIX
-
-          // 🔥 USE FULL ORDER FOR EVERYTHING
-          trailer_number: fullOrder.trailer_number || "",
+          // ✅ MAP CORRECTLY
+          customer_name: fullOrder.customer || fullOrder.company || "",
+          trailer_dropped: fullOrder.trailer_number || "",
           notes: fullOrder.notes || "",
-          eta: fullOrder.eta || "",
-
-          company: fullOrder.customer || fullOrder.company || "",
-          customer: fullOrder.customer || fullOrder.company || "",
-
-          item: fullOrder.item || "",
-
-          // ✅ YOUR CITY LOGIC
           city: city || "",
-
-          load_type: fullOrder.load_type || "",
-
-          date: orderDate,
-
-          created_date: new Date().toISOString()
+          load_type: fullOrder.item || "", // or use item as load_type
+          run_type: "delivery",
+          created_at: new Date().toISOString()
         });
 
         // 🔄 refresh driver log
