@@ -455,8 +455,10 @@ export default function DispatchLog() {
           ? existingRuns
           : existingRuns?.data || [];
 
-        // 🔥 GET FULL ORDER FROM DB
-        const fullOrder = updated;
+        // 🔥 GET FULL ORDER FROM DB (FIX)
+        const orderFromDb = await api.entities.DispatchOrder.get(dispatchId);
+
+        const fullOrder = orderFromDb?.data || orderFromDb;
 
         // 🔥 USE FULL DATA (NOT variables.data)
         const newTrailer = String(fullOrder.trailer_number || "").trim();
@@ -482,7 +484,7 @@ export default function DispatchLog() {
           const customerName = String(fullOrder.customer || fullOrder.company || "").toLowerCase();
 
           customerData = parsed.find(c =>
-            String(c.customer || "").toLowerCase() === customerName
+            String(c.customer || "").toLowerCase().includes(customerName)
           );
         } catch (e) {
           console.error("Customer lookup failed", e);
