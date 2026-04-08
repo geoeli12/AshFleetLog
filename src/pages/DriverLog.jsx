@@ -171,15 +171,40 @@ export default function DriverLog() {
 
     const cancelShiftMutation = useMutation({
         mutationFn: async (shiftId) => {
-            const shiftRuns = runs;
-            for (const run of shiftRuns) {
+
+            // 🔥 GET RUNS FOR THIS SHIFT (safe way, not relying on local state)
+            const shiftRuns = await api.entities.Run.filter({ shift_id: shiftId });
+
+            const runsArray = Array.isArray(shiftRuns)
+                ? shiftRuns
+                : shiftRuns?.data || [];
+
+            // 🔥 DELETE RUNS
+            for (const run of runsArray) {
                 await api.entities.Run.delete(run.id);
             }
+
+            // 🔥 DELETE SHIFT
             await api.entities.Shift.delete(shiftId);
+
+            return shiftId; // 👈 IMPORTANT (we use this in onSuccess)
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['activeShifts'] });
-            queryClient.invalidateQueries({ queryKey: ['runs'] });
+
+        onSuccess: async (deletedShiftId) => {
+
+            // 🚀 INSTANT UI UPDATE
+            queryClient.setQueryData(
+                ['shiftsByDate', format(selectedDate, 'yyyy-MM-dd')],
+                (old) => old?.filter(s => s.id !== deletedShiftId) || []
+            );
+
+            // 🔄 REFRESH EVERYTHING
+            await queryClient.invalidateQueries({ queryKey: ['activeShifts'] });
+            await queryClient.invalidateQueries({ queryKey: ['runs'] });
+
+            await queryClient.invalidateQueries({
+                queryKey: ['shiftsByDate', format(selectedDate, 'yyyy-MM-dd')]
+            });
         }
     });
 
@@ -343,12 +368,38 @@ export default function DriverLog() {
                                                                 </AlertDialogHeader>
                                                                 <AlertDialogFooter>
                                                                     <AlertDialogCancel className="rounded-xl">Keep Shift</AlertDialogCancel>
-                                                                    <AlertDialogAction onClick={async () => {
-                                                                        const shiftRuns = await api.entities.Run.filter({ shift_id: shift.id });
-                                                                        for (const run of shiftRuns) { await api.entities.Run.delete(run.id); }
-                                                                        await api.entities.Shift.delete(shift.id);
-                                                                        queryClient.invalidateQueries({ queryKey: ['activeShifts'] });
-                                                                    }} className="bg-red-600 hover:bg-red-700 rounded-xl">
+                                                                    <AlertDialogAction
+                                                                        onClick={async () => {
+
+                                                                            // 🔥 DELETE RUNS FIRST
+                                                                            const shiftRuns = await api.entities.Run.filter({ shift_id: shift.id });
+
+                                                                            const runsArray = Array.isArray(shiftRuns)
+                                                                                ? shiftRuns
+                                                                                : shiftRuns?.data || [];
+
+                                                                            for (const run of runsArray) {
+                                                                                await api.entities.Run.delete(run.id);
+                                                                            }
+
+                                                                            // 🔥 DELETE SHIFT
+                                                                            await api.entities.Shift.delete(shift.id);
+
+                                                                            // 🚀 INSTANT UI UPDATE (no page refresh needed)
+                                                                            queryClient.setQueryData(['shiftsByDate', format(selectedDate, 'yyyy-MM-dd')], (old) =>
+                                                                                old?.filter(s => s.id !== shift.id) || []
+                                                                            );
+
+                                                                            // 🔄 FORCE REFRESH ALL RELATED DATA
+                                                                            await queryClient.invalidateQueries({ queryKey: ['activeShifts'] });
+                                                                            await queryClient.invalidateQueries({ queryKey: ['runs'] });
+
+                                                                            await queryClient.invalidateQueries({
+                                                                                queryKey: ['shiftsByDate', format(selectedDate, 'yyyy-MM-dd')]
+                                                                            });
+                                                                        }}
+                                                                        className="bg-red-600 hover:bg-red-700 rounded-xl"
+                                                                    >
                                                                         Cancel Shift
                                                                     </AlertDialogAction>
                                                                 </AlertDialogFooter>
