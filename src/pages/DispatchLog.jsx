@@ -353,9 +353,11 @@ export default function DispatchLog() {
             1
           );
 
-          let shift = Array.isArray(existingShiftList)
-            ? existingShiftList[0]
-            : existingShiftList?.data?.[0];
+          const shiftArray = Array.isArray(existingShiftList)
+            ? existingShiftList
+            : existingShiftList?.data || [];
+
+          let shift = shiftArray[0];
 
           if (shift) {
 
@@ -401,19 +403,6 @@ export default function DispatchLog() {
         // 🚨 ONLY when driver is newly assigned
         if (!driverName) return;
 
-        const isNewAssignment = !previousDriver && driverName;
-        const isDriverChanged = previousDriver && previousDriver !== driverName;
-
-        console.log("DISPATCH SYNC:", {
-          driverName,
-          previousDriver,
-          isNewAssignment,
-          isDriverChanged,
-          dispatchId
-        });
-
-        if (!isNewAssignment && !isDriverChanged) return;
-
         // 🔍 1. CHECK IF SHIFT EXISTS
         const existingShiftList = await api.entities.Shift.filter(
           {
@@ -425,9 +414,11 @@ export default function DispatchLog() {
           1
         );
 
-        let shift = Array.isArray(existingShiftList)
-          ? existingShiftList[0]
-          : existingShiftList?.data?.[0];
+        const shiftArray = Array.isArray(existingShiftList)
+          ? existingShiftList
+          : existingShiftList?.data || [];
+
+        let shift = shiftArray[0];
 
         if (!shift) {
           const createdShift = await api.entities.Shift.create({
@@ -456,9 +447,10 @@ export default function DispatchLog() {
           : existingRuns?.data || [];
 
         // 🔥 GET FULL ORDER FROM DB (FIX)
-        const orderFromDb = await api.entities.DispatchOrder.get(dispatchId);
+        // const orderFromDb = await api.entities.DispatchOrder.get(dispatchId);
+        // const fullOrder = orderFromDb?.data || orderFromDb;
 
-        const fullOrder = orderFromDb?.data || orderFromDb;
+        const fullOrder = updated;
 
         // 🔥 USE FULL DATA (NOT variables.data)
         const newTrailer = String(fullOrder.trailer_number || "").trim();
