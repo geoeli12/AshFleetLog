@@ -450,7 +450,7 @@ export default function DispatchLog() {
         // const orderFromDb = await api.entities.DispatchOrder.get(dispatchId);
         // const fullOrder = orderFromDb?.data || orderFromDb;
 
-        const fullOrder = updated;
+        const fullOrder = updated?.data || updated;
 
         // 🔥 USE FULL DATA (NOT variables.data)
         const newTrailer = String(fullOrder.trailer_number || "").trim();
