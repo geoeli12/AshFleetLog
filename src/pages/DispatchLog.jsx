@@ -370,15 +370,6 @@ export default function DispatchLog() {
               : existingRuns?.data || [];
 
             // 🎯 Match EXACT run GET FULL ORDER FROM DB
-            const fullOrderRes = await api.entities.DispatchOrder.get(id);
-            const fullOrder = fullOrderRes?.data || fullOrderRes;
-
-            // 🔥 USE FULL DATA (NOT variables.data)
-            const newTrailer = String(fullOrder.trailer_number || "").trim();
-            const newCompany = String(fullOrder.customer || fullOrder.company || "").trim();
-            const newCustomer = newCompany;
-            const newDate = String(orderDate || "").trim();
-
             const matchingRuns = runsArray.filter(r =>
               String(r.dispatch_id) === String(dispatchId)
             );
@@ -412,6 +403,14 @@ export default function DispatchLog() {
 
         const isNewAssignment = !previousDriver && driverName;
         const isDriverChanged = previousDriver && previousDriver !== driverName;
+
+        console.log("DISPATCH SYNC:", {
+          driverName,
+          previousDriver,
+          isNewAssignment,
+          isDriverChanged,
+          dispatchId
+        });
 
         if (!isNewAssignment && !isDriverChanged) return;
 
@@ -457,8 +456,7 @@ export default function DispatchLog() {
           : existingRuns?.data || [];
 
         // 🔥 GET FULL ORDER FROM DB
-        const fullOrderRes = await api.entities.DispatchOrder.get(id);
-        const fullOrder = fullOrderRes?.data || fullOrderRes;
+        const fullOrder = updated;
 
         // 🔥 USE FULL DATA (NOT variables.data)
         const newTrailer = String(fullOrder.trailer_number || "").trim();
