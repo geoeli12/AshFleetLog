@@ -338,7 +338,17 @@ export default function DispatchLog() {
         const driverName = String(variables?.data?.delivered_by || "").trim();
         const previousDriver = String(variables?.data?._previousDeliveredBy || "").trim();
         const orderDate = toYMD(variables?.data?.date || updated?.date);
-        const dispatchId = updated?.id || variables?.id;
+        // const dispatchId = updated?.id || variables?.id;
+
+        const dispatchId =
+          updated?.id ||
+          updated?.data?.id ||
+          variables?.id;
+
+        if (!dispatchId) {
+          console.error("❌ dispatchId missing", { updated, variables });
+          return;
+        }
 
         // 🚨 HANDLE DRIVER REMOVAL FIRST
         if (!driverName && previousDriver) {
@@ -464,11 +474,15 @@ export default function DispatchLog() {
         const newCustomer = newCompany;
         const newDate = String(orderDate || "").trim();
 
+        // const existingRun = runsArray.find(r =>
+          // String(r.trailer_dropped || "") === String(fullOrder.trailer_number || "") &&
+          // String(r.customer_name || "") === String(fullOrder.customer || fullOrder.company || "") &&
+          // String(r.run_date || "") === String(orderDate || "") &&
+          // String(r.driver_name || "") === String(driverName || "")
+        // );
+
         const existingRun = runsArray.find(r =>
-          String(r.trailer_dropped || "") === String(fullOrder.trailer_number || "") &&
-          String(r.customer_name || "") === String(fullOrder.customer || fullOrder.company || "") &&
-          String(r.run_date || "") === String(orderDate || "") &&
-          String(r.driver_name || "") === String(driverName || "")
+          String(r.dispatch_id || "") === String(dispatchId || "")
         );
 
         if (existingRun) return;
@@ -499,15 +513,24 @@ export default function DispatchLog() {
         await api.entities.Run.create({
           shift_id: shift.id,
           driver_name: driverName,
+
+          // 🔥 CRITICAL LINK
+          dispatch_id: dispatchId,
+
+          // 🔥 MATCH YOUR SYSTEM
           run_date: orderDate,
 
-          // ✅ MAP CORRECTLY
-          customer_name: fullOrder.customer || fullOrder.company || "",
+          customer_name: fullOrder.customer || "",
           trailer_dropped: fullOrder.trailer_number || "",
+
           notes: fullOrder.notes || "",
+          eta: fullOrder.eta || "",
+
           city: city || "",
-          load_type: fullOrder.item || "", // or use item as load_type
+
+          load_type: fullOrder.item || "",
           run_type: "delivery",
+
           created_at: new Date().toISOString()
         });
 
