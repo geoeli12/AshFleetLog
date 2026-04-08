@@ -45,7 +45,33 @@ export function makeEntityRouter({ collectionKey }) {
 
   r.post("/", async (req, res) => {
     try {
-      const payload = normalizePayload(collectionKey, req.body);
+
+
+      // const payload = normalizePayload(collectionKey, req.body);
+
+      let payload;
+
+      if (collectionKey === "Run") {
+        payload = {
+          shift_id: req.body.shift_id,
+          driver_name: req.body.driver_name,
+          dispatch_id: req.body.dispatch_id,
+
+          run_date: req.body.run_date,
+          customer_name: req.body.customer_name,
+          trailer_dropped: req.body.trailer_dropped,
+
+          notes: req.body.notes,
+          city: req.body.city,
+
+          load_type: req.body.load_type,
+          run_type: req.body.run_type,
+
+          created_at: req.body.created_at
+        };
+      } else {
+        payload = normalizePayload(collectionKey, req.body);
+      }
 
       if (collectionKey === "drivers" && !payload.name) {
         return res.status(400).json({ error: "Missing required field: name" });
@@ -72,7 +98,31 @@ export function makeEntityRouter({ collectionKey }) {
   r.put("/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const payload = normalizePayload(collectionKey, req.body);
+      // const payload = normalizePayload(collectionKey, req.body);
+
+      let payload;
+
+      if (collectionKey === "Run") {
+        payload = {
+          shift_id: req.body.shift_id,
+          driver_name: req.body.driver_name,
+          dispatch_id: req.body.dispatch_id,
+
+          run_date: req.body.run_date,
+          customer_name: req.body.customer_name,
+          trailer_dropped: req.body.trailer_dropped,
+
+          notes: req.body.notes,
+          city: req.body.city,
+
+          load_type: req.body.load_type,
+          run_type: req.body.run_type,
+
+          created_at: req.body.created_at
+        };
+      } else {
+        payload = normalizePayload(collectionKey, req.body);
+      }
 
       const { data, error } = await supabase
         .from(table)
