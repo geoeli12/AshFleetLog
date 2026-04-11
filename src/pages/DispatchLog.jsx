@@ -68,6 +68,7 @@ function normalizeIncomingUiRow(ui, fallbackDateYmd) {
   const out = {
     date: ui?.date || fallbackDateYmd || "",
     company: String(ui?.company ?? ""),
+    city: String(ui?.city ?? ""), // 🔥 ADD THIS
     trailer_number: String(ui?.trailer_number ?? ""),
     notes: String(ui?.notes ?? ""),
     dock_hours: String(ui?.dock_hours ?? ""),
