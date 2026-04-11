@@ -21,6 +21,7 @@ const getInitialForm = (dateValue, regionValue) => ({
   date: dateValue || format(new Date(), 'yyyy-MM-dd'),
   region: (regionValue || '').toString().trim().toUpperCase(),
   company: '',
+  city: '',
   trailer_number: '',
   notes: '',
   dock_hours: '',
@@ -89,6 +90,79 @@ export default function AddDispatchForm({ onAdd, defaultDate, region }) {
     ];
   }, [customersIL, customersPA]);
 
+  // Address formats in your Excel are typically like:
+  // "13305 104th street Pleasant Prairie, WI 53158" (no comma between street and city)
+  // We extract the city by:
+  // 1) taking the portion before the last comma ("... Pleasant Prairie")
+  // 2) removing the street portion up to the last known street suffix ("street", "rd", "ave", etc.)
+  // 3) returning the remaining trailing text as the city (supports multi-word cities)
+  const parseCityFromAddress = (address) => {
+    if (!address) return '';
+
+    const raw = String(address).trim();
+    if (!raw) return '';
+
+    const parts = raw.split(',').map(s => s.trim()).filter(Boolean);
+
+    // If address already contains comma-separated parts like:
+    // "12657 Uline Wy, Kenosha, WI 53144"
+    // then city is typically the second-to-last part.
+    if (parts.length >= 3) {
+      const cityPart = (parts[parts.length - 2] || '').trim();
+      if (cityPart) return cityPart;
+    }
+
+    const left = (parts.length >= 2 ? parts.slice(0, -1).join(', ') : raw).trim();
+    if (!left) return '';
+
+    const suffixes = [
+      'street', 'st',
+      'road', 'rd',
+      'avenue', 'ave',
+      'boulevard', 'blvd',
+      'drive', 'dr',
+      'lane', 'ln',
+      'court', 'ct',
+      'way',
+      'parkway', 'pkwy',
+      'highway', 'hwy',
+      'circle', 'cir',
+      'place', 'pl',
+      'terrace', 'ter',
+      'trail', 'trl',
+      'suite', 'ste',
+      'unit', 'apt'
+    ];
+
+    const lower = left.toLowerCase();
+    let bestIdx = -1;
+    let bestSuffixLen = 0;
+
+    // Find the *last* street suffix occurrence to split city from street.
+    for (const suf of suffixes) {
+      const re = new RegExp(`\\b${suf}\\b`, 'g');
+      let m;
+      while ((m = re.exec(lower)) !== null) {
+        const idx = m.index;
+        if (idx >= bestIdx) {
+          bestIdx = idx;
+          bestSuffixLen = suf.length;
+        }
+      }
+    }
+
+    if (bestIdx >= 0) {
+      const after = left.slice(bestIdx + bestSuffixLen).trim();
+      const cleaned = after.replace(/^[-–—,\s]+/, '').trim();
+      if (cleaned) return cleaned;
+    }
+
+    // Fallback: take the last 2-3 tokens (helps if suffix not found)
+    const tokens = left.split(/\s+/).filter(Boolean);
+    if (tokens.length <= 2) return left;
+    return tokens.slice(Math.max(0, tokens.length - 3)).join(' ');
+  };
+
   const findCompanyMatch = (companyName) => {
     const q = (companyName || '').toLowerCase().trim();
     if (!q) return null;
@@ -114,10 +188,12 @@ export default function AddDispatchForm({ onAdd, defaultDate, region }) {
     const name = String(cust?.customer || "");
     const dock = String(cust?.receivingHours || cust?.receivingNotes || "").trim();
     const eta = String(cust?.eta || "").trim();
+    const city = parseCityFromAddress(cust?.address);
 
     setForm(prev => ({
       ...prev,
       company: name,
+      city: city || prev.city, // ✅ AUTO FILL CITY
       dock_hours: dock || prev.dock_hours,
       eta: eta || prev.eta,
     }));
@@ -523,7 +599,7 @@ export default function AddDispatchForm({ onAdd, defaultDate, region }) {
 
         <TabsContent value="single">
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
               <div>
                 <label className="text-xs font-medium text-slate-500 mb-1 block">Date</label>
                 <Input
@@ -542,8 +618,19 @@ export default function AddDispatchForm({ onAdd, defaultDate, region }) {
                     onFocus={() => setIsCompanyFocused(true)}
                     onBlur={() => {
                       if (ignoreCompanyBlurRef.current) return;
+
                       tryAutoFillDockHoursFromCompany();
                       tryAutoFillEtaFromCompany();
+
+                      // 🔥 AUTO FILL CITY FROM TYPED COMPANY
+                      const match = findCompanyMatch(form.company);
+                      if (match) {
+                        const city = parseCityFromAddress(match.address);
+                        if (city) {
+                          setForm(prev => ({ ...prev, city }));
+                        }
+                      }
+
                       setIsCompanyFocused(false);
                     }}
                     placeholder="Company name"
@@ -591,6 +678,15 @@ export default function AddDispatchForm({ onAdd, defaultDate, region }) {
                     </div>
                   ) : null}
                 </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-500 mb-1 block">City</label>
+                <Input
+                  value={form.city}
+                  onChange={(e) => handleChange('city', e.target.value)}
+                  placeholder="City"
+                  className="h-10"
+                />
               </div>
               <div>
                 <label className="text-xs font-medium text-slate-500 mb-1 block">Trailer #</label>
