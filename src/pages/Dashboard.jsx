@@ -371,6 +371,33 @@ function DispatchBoard({ dispatchQuery }) {
             {/* 🔹 Pills Container (same as before) */}
             <div className="flex flex-wrap gap-2">
 
+              {/* 🔥 DEFAULT MAIN PILL (ALWAYS FIRST) */}
+              <div
+                key={`main-${driver}`}
+                className="px-3 py-2 rounded-xl text-white bg-red-500/90 shadow"
+              >
+                <div className="flex flex-col gap-1">
+
+                  {/* Customer */}
+                  <div className="flex items-center gap-1">
+                    <Building2 className="w-3 h-3 opacity-80" />
+                    <span className="text-xs font-semibold truncate">
+                      Ash Pallet
+                    </span>
+                  </div>
+
+                  {/* City (derived from address) */}
+                  <div className="flex items-center gap-1">
+                    <MapPin className="w-3 h-3 opacity-70" />
+                    <span className="text-[10px] opacity-80 truncate">
+                      Antioch
+                    </span>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* 🔥 ACTUAL RUNS */}
               {runs.map((r) => {
                 const type = String(r?.type || r?.load_type || "").toLowerCase();
                 const isPickup = type.includes("pickup");
@@ -389,7 +416,7 @@ function DispatchBoard({ dispatchQuery }) {
                   >
                     <div className="flex flex-col gap-1">
 
-                      {/* 🔹 Customer Row */}
+                      {/* 🔹 Customer */}
                       <div className="flex items-center gap-1">
                         <Building2 className="w-3 h-3 opacity-80" />
                         <span className="text-xs font-semibold truncate">
@@ -397,7 +424,7 @@ function DispatchBoard({ dispatchQuery }) {
                         </span>
                       </div>
 
-                      {/* 🔹 City Row */}
+                      {/* 🔹 City */}
                       {r?.city && (
                         <div className="flex items-center gap-1">
                           <MapPin className="w-3 h-3 opacity-70" />
