@@ -360,52 +360,59 @@ function DispatchBoard({ dispatchQuery }) {
           }}
         >
 
-          <div className="text-white font-semibold mb-3">
-            {driver}
-          </div>
+          {/* 🔥 NEW WRAPPER (Driver + Pills SAME ROW) */}
+          <div className="flex items-center gap-3 mb-3">
 
-          <div className="flex flex-wrap gap-2">
+            {/* 🔹 Driver Name (unchanged, just moved inside flex) */}
+            <div className="text-white font-semibold whitespace-nowrap">
+              {driver}
+            </div>
 
-            {runs.map((r) => {
-              const type = String(r?.type || r?.load_type || "").toLowerCase();
-              const isPickup = type.includes("pickup");
+            {/* 🔹 Pills Container (same as before) */}
+            <div className="flex flex-wrap gap-2">
 
-              const color = isPickup
-                ? "bg-green-500/90"
-                : "bg-blue-500/90";
+              {runs.map((r) => {
+                const type = String(r?.type || r?.load_type || "").toLowerCase();
+                const isPickup = type.includes("pickup");
 
-              return (
-                <div
-                  key={r.id}
-                  draggable
-                  onDragStart={() => handleDragStart(r, driver)}
-                  onClick={() => handleClickRun(r)}
-                  className={`px-3 py-2 rounded-xl text-white ${color} shadow cursor-pointer`}
-                >
-                  <div className="flex flex-col gap-1">
+                const color = isPickup
+                  ? "bg-green-500/90"
+                  : "bg-blue-500/90";
 
-                    {/* 🔹 Customer Row */}
-                    <div className="flex items-center gap-1">
-                      <Building2 className="w-3 h-3 opacity-80" />
-                      <span className="text-xs font-semibold truncate">
-                        {r?.customer || r?.company || "No Name"}
-                      </span>
-                    </div>
+                return (
+                  <div
+                    key={r.id}
+                    draggable
+                    onDragStart={() => handleDragStart(r, driver)}
+                    onClick={() => handleClickRun(r)}
+                    className={`px-3 py-2 rounded-xl text-white ${color} shadow cursor-pointer`}
+                  >
+                    <div className="flex flex-col gap-1">
 
-                    {/* 🔹 City Row */}
-                    {r?.city && (
+                      {/* 🔹 Customer Row */}
                       <div className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3 opacity-70" />
-                        <span className="text-[10px] opacity-80 truncate">
-                          {r.city}
+                        <Building2 className="w-3 h-3 opacity-80" />
+                        <span className="text-xs font-semibold truncate">
+                          {r?.customer || r?.company || "No Name"}
                         </span>
                       </div>
-                    )}
 
+                      {/* 🔹 City Row */}
+                      {r?.city && (
+                        <div className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3 opacity-70" />
+                          <span className="text-[10px] opacity-80 truncate">
+                            {r.city}
+                          </span>
+                        </div>
+                      )}
+
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+
+            </div>
 
           </div>
 
