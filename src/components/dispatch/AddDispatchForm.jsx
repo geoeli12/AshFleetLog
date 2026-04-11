@@ -285,8 +285,26 @@ export default function AddDispatchForm({ onAdd, defaultDate, region }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.company.trim()) return;
-    await onAdd({ ...form, region: (region || form.region || '').toString().trim().toUpperCase() });
-    setForm(getInitialForm(form.date, region));
+
+    let finalForm = { ...form };
+
+    // 🔥 FORCE CITY BEFORE SUBMIT (no blur dependency)
+    if (!finalForm.city) {
+      const match = findCompanyMatch(finalForm.company);
+      if (match) {
+        const city = parseCityFromAddress(match.address);
+        if (city) {
+          finalForm.city = city;
+        }
+      }
+    }
+
+    await onAdd({
+      ...finalForm,
+      region: (region || finalForm.region || '').toString().trim().toUpperCase()
+    });
+
+    setForm(getInitialForm(finalForm.date, region));
     setIsExpanded(false);
   };
 
