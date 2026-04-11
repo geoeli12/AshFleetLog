@@ -382,10 +382,23 @@ function DispatchBoard({ dispatchQuery }) {
                   draggable
                   onDragStart={() => handleDragStart(r, driver)}
                   onClick={() => handleClickRun(r)}
-                  className={`px-3 py-2 rounded-full text-xs text-white ${color} shadow cursor-pointer`}
+                  className={`px-3 py-2 rounded-xl text-white ${color} shadow cursor-pointer`}
                 >
-                  {r?.customer || r?.company || "No Name"}
-                  {r?.city ? ` - ${r.city}` : ""}
+                  <div className="flex flex-col leading-tight">
+    
+                    {/* Customer */}
+                    <span className="text-xs font-semibold truncate">
+                      {r?.customer || r?.company || "No Name"}
+                    </span>
+
+                    {/* City */}
+                    {r?.city && (
+                      <span className="text-[10px] opacity-80 truncate">
+                        {r.city}
+                      </span>
+                    )}
+
+                  </div>
                 </div>
               );
             })}
