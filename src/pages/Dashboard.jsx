@@ -382,14 +382,10 @@ function DispatchBoard({ dispatchQuery }) {
                   draggable
                   onDragStart={() => handleDragStart(r, driver)}
                   onClick={() => handleClickRun(r)}
-                  className={`px-3 py-2 rounded-xl text-xs text-white ${color} shadow cursor-pointer`}
+                  className={`px-3 py-2 rounded-full text-xs text-white ${color} shadow cursor-pointer`}
                 >
-                  <div className="font-medium">
-                    {r?.customer || r?.company || "No Name"}
-                  </div>
-                  <div className="text-[10px] opacity-80">
-                    {r?.city || ""}
-                  </div>
+                  {r?.customer || r?.company || "No Name"}
+                  {r?.city ? ` - ${r.city}` : ""}
                 </div>
               );
             })}
