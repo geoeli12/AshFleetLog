@@ -179,7 +179,7 @@ function toDbPayload(ui) {
     area: region,
     market: region,
     customer: ui.company || "",
-    city: ui.city || "",
+    ...(ui.city !== undefined && { city: ui.city }),
     trailer_number: ui.trailer_number || "",
     notes: ui.notes || "",
     dock_hours: ui.dock_hours || "",
