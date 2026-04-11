@@ -3,9 +3,7 @@ import { Link } from "react-router-dom";
 import { api } from "@/api/apiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
-import {
-  ArrowRight,
-} from "lucide-react";
+import { ArrowRight, Building2, MapPin } from "lucide-react";
 import {
   endOfMonth,
   endOfWeek,
@@ -384,18 +382,24 @@ function DispatchBoard({ dispatchQuery }) {
                   onClick={() => handleClickRun(r)}
                   className={`px-3 py-2 rounded-xl text-white ${color} shadow cursor-pointer`}
                 >
-                  <div className="flex flex-col leading-tight">
-    
-                    {/* Customer */}
-                    <span className="text-xs font-semibold truncate">
-                      {r?.customer || r?.company || "No Name"}
-                    </span>
+                  <div className="flex flex-col gap-1">
 
-                    {/* City */}
-                    {r?.city && (
-                      <span className="text-[10px] opacity-80 truncate">
-                        {r.city}
+                    {/* 🔹 Customer Row */}
+                    <div className="flex items-center gap-1">
+                      <Building2 className="w-3 h-3 opacity-80" />
+                      <span className="text-xs font-semibold truncate">
+                        {r?.customer || r?.company || "No Name"}
                       </span>
+                    </div>
+
+                    {/* 🔹 City Row */}
+                    {r?.city && (
+                      <div className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3 opacity-70" />
+                        <span className="text-[10px] opacity-80 truncate">
+                          {r.city}
+                        </span>
+                      </div>
                     )}
 
                   </div>
