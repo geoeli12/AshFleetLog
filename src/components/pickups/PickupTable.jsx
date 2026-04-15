@@ -47,7 +47,7 @@ export default function PickupTable({
     setLocalLogs(Array.isArray(logs) ? logs : []);
   }, [logs]);
 
-  // 🔥 AUTO FOCUS FIRST INPUT
+  // 🔥 Auto focus
   useEffect(() => {
     if (editingId) {
       setTimeout(() => {
@@ -91,7 +91,7 @@ export default function PickupTable({
     setEditData(prev => ({ ...prev, [field]: value }));
   };
 
-  // 🔥 FULL KEYBOARD NAV
+  // 🔥 Keyboard Nav
   const handleKeyNav = (e) => {
     const row = e.target.closest(".pickup-row");
     if (!row) return;
@@ -121,19 +121,21 @@ export default function PickupTable({
     }
   };
 
-  const columns = useMemo(() => [
-    { key: "__move__", width: "w-10" },
-    { key: "company", width: "w-[18%]" },
-    { key: "dk_trl", width: "w-[12%]" },
-    { key: "location", width: "w-[24%]" },
-    { key: "eta", width: "w-[8%]" },
-    { key: "days_open", width: "w-[8%]" },
-    { key: "shift_code", width: "w-[6%]" },
-    { key: "driver", width: "w-[10%]" },
-    { key: "notes", width: "w-[10%]" },
-  ], []);
+  const columns = useMemo(
+    () => [
+      { key: "drag", label: "", width: "w-[4%]" },
+      { key: "company", label: "Company", width: "w-[18%]" },
+      { key: "dk_trl", label: "DK/TRL#", width: "w-[12%]" },
+      { key: "location", label: "Location", width: "w-[24%]" },
+      { key: "eta", label: "ETA", width: "w-[8%]" },
+      { key: "days_open", label: "Days Old", width: "w-[8%] text-center" },
+      { key: "shift_code", label: "Type", width: "w-[6%] text-center" },
+      { key: "driver", label: "Driver", width: "w-[10%]" },
+      { key: "notes", label: "Notes", width: "w-[10%]" },
+    ],
+    []
+  );
 
-  // 🔥 DRAG
   const handleDragEnd = (result) => {
     if (!result.destination) return;
 
@@ -150,12 +152,33 @@ export default function PickupTable({
   const dragDisabled = Boolean(editingId);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden w-full">
 
+      {/* ✅ HEADER (UNCHANGED) */}
+      <div className="bg-slate-800 text-white">
+        <div className="flex items-center px-4 py-3 gap-2 w-full">
+          {columns.map((col) => (
+            <div
+              key={col.key}
+              className={cn(
+                "text-xs font-semibold uppercase tracking-wider truncate",
+                col.width
+              )}
+            >
+              {col.label}
+            </div>
+          ))}
+          <div className="w-[10%] text-xs font-semibold uppercase text-center">
+            Actions
+          </div>
+        </div>
+      </div>
+
+      {/* ROWS */}
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="pickup-table">
           {(provided) => (
-            <div ref={provided.innerRef} {...provided.droppableProps}>
+            <div ref={provided.innerRef} {...provided.droppableProps} className="divide-y divide-slate-100">
 
               {localLogs.map((log, index) => {
                 const isEditing = editingId === log.id;
@@ -178,14 +201,14 @@ export default function PickupTable({
                         onClick={() => !isEditing && startEdit(log)}
                       >
 
-                        {columns.map(col => {
+                        {columns.map((col) => {
 
-                          if (col.key === "__move__") {
+                          if (col.key === "drag") {
                             return (
                               <div
                                 key={col.key}
                                 {...(dragDisabled ? {} : dragProvided.dragHandleProps)}
-                                className="w-10"
+                                className={col.width}
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 <GripVertical className="h-4 w-4 text-slate-400" />
@@ -198,7 +221,11 @@ export default function PickupTable({
                               log.date_called_out,
                               normalizeYMD(viewDate)
                             );
-                            return <div key={col.key}>{days || "-"}</div>;
+                            return (
+                              <div key={col.key} className={col.width}>
+                                {days || "-"}
+                              </div>
+                            );
                           }
 
                           return (
@@ -214,63 +241,35 @@ export default function PickupTable({
                                   className="h-8"
                                 />
                               ) : (
-                                <div>{log[col.key] || "-"}</div>
+                                <div className="truncate">
+                                  {log[col.key] || "-"}
+                                </div>
                               )}
                             </div>
                           );
                         })}
 
                         {/* ACTIONS */}
-                        <div className="flex gap-1">
+                        <div className="w-[10%] flex gap-1 justify-center">
                           {isEditing ? (
                             <>
-                              <Button
-                                size="icon"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  saveEdit();
-                                }}
-                              >
+                              <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); saveEdit(); }}>
                                 <Check className="h-4 w-4" />
                               </Button>
-                              <Button
-                                size="icon"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  cancelEdit();
-                                }}
-                              >
+                              <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); cancelEdit(); }}>
                                 <X className="h-4 w-4" />
                               </Button>
                             </>
                           ) : (
                             <>
-                              <Button
-                                size="icon"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  startEdit(log);
-                                }}
-                              >
+                              <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); startEdit(log); }}>
                                 <Pencil className="h-4 w-4" />
                               </Button>
-                              <Button
-                                size="icon"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onCopy?.(log);
-                                }}
-                              >
-                                <Copy className="h-4 w-4" />
+                              <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); onCopy?.(log); }}>
+                                <Copy className="h-4 w-4 text-sky-600" />
                               </Button>
-                              <Button
-                                size="icon"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onDelete(log.id);
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4" />
+                              <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); onDelete(log.id); }}>
+                                <Trash2 className="h-4 w-4 text-red-500" />
                               </Button>
                             </>
                           )}
