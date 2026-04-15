@@ -30,6 +30,26 @@ function daysBetween(fromYmd, toYmd) {
   return Math.floor((b - a) / (1000 * 60 * 60 * 24));
 }
 
+// ✅ STATUS LOGIC (MATCH DISPATCH)
+const getRowStatus = (log) => {
+  const driver = String(log.driver ?? "").trim().toLowerCase();
+
+  if (driver === "no") return "not_picked";
+  if (driver) return "picked"; // 🔥 RED
+  return "pending";
+};
+
+const getStatusStyles = (status) => {
+  switch (status) {
+    case "picked":
+      return "bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-l-red-500";
+    case "not_picked":
+      return "bg-gradient-to-r from-sky-50 to-sky-100 border-l-4 border-l-sky-500";
+    default:
+      return "bg-white border-l-4 border-l-slate-200";
+  }
+};
+
 export default function PickupTable({
   viewDate,
   logs,
@@ -47,7 +67,7 @@ export default function PickupTable({
     setLocalLogs(Array.isArray(logs) ? logs : []);
   }, [logs]);
 
-  // 🔥 Auto focus
+  // AUTO FOCUS
   useEffect(() => {
     if (editingId) {
       setTimeout(() => {
@@ -91,7 +111,7 @@ export default function PickupTable({
     setEditData(prev => ({ ...prev, [field]: value }));
   };
 
-  // 🔥 Keyboard Nav
+  // KEYBOARD NAV
   const handleKeyNav = (e) => {
     const row = e.target.closest(".pickup-row");
     if (!row) return;
@@ -154,17 +174,11 @@ export default function PickupTable({
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden w-full">
 
-      {/* ✅ HEADER (UNCHANGED) */}
+      {/* HEADER */}
       <div className="bg-slate-800 text-white">
         <div className="flex items-center px-4 py-3 gap-2 w-full">
           {columns.map((col) => (
-            <div
-              key={col.key}
-              className={cn(
-                "text-xs font-semibold uppercase tracking-wider truncate",
-                col.width
-              )}
-            >
+            <div key={col.key} className={cn("text-xs font-semibold uppercase truncate", col.width)}>
               {col.label}
             </div>
           ))}
@@ -174,112 +188,110 @@ export default function PickupTable({
         </div>
       </div>
 
-      {/* ROWS */}
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="pickup-table">
           {(provided) => (
             <div ref={provided.innerRef} {...provided.droppableProps} className="divide-y divide-slate-100">
 
-              {localLogs.map((log, index) => {
-                const isEditing = editingId === log.id;
+              {localLogs.length === 0 ? (
+                <div className="px-4 py-12 text-center text-slate-400">
+                  No pick ups yet. Add your first entry above.
+                </div>
+              ) : (
+                localLogs.map((log, index) => {
+                  const isEditing = editingId === log.id;
+                  const status = getRowStatus(log);
 
-                return (
-                  <Draggable
-                    key={log.id}
-                    draggableId={String(log.id)}
-                    index={index}
-                    isDragDisabled={dragDisabled}
-                  >
-                    {(dragProvided, snapshot) => (
-                      <div
-                        ref={dragProvided.innerRef}
-                        {...dragProvided.draggableProps}
-                        className={cn(
-                          "pickup-row flex items-center px-4 py-3 gap-2 transition-all cursor-pointer",
-                          snapshot.isDragging && "shadow-lg ring-2 ring-slate-300"
-                        )}
-                        onClick={() => !isEditing && startEdit(log)}
-                      >
+                  return (
+                    <Draggable
+                      key={log.id}
+                      draggableId={String(log.id)}
+                      index={index}
+                      isDragDisabled={dragDisabled}
+                    >
+                      {(dragProvided, snapshot) => (
+                        <div
+                          ref={dragProvided.innerRef}
+                          {...dragProvided.draggableProps}
+                          className={cn(
+                            "pickup-row flex items-center px-4 py-3 gap-2 transition-all cursor-pointer",
+                            getStatusStyles(status),
+                            snapshot.isDragging && "shadow-lg ring-2 ring-slate-300"
+                          )}
+                          onClick={() => !isEditing && startEdit(log)}
+                        >
 
-                        {columns.map((col) => {
+                          {columns.map((col) => {
 
-                          if (col.key === "drag") {
-                            return (
-                              <div
-                                key={col.key}
-                                {...(dragDisabled ? {} : dragProvided.dragHandleProps)}
-                                className={col.width}
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <GripVertical className="h-4 w-4 text-slate-400" />
-                              </div>
-                            );
-                          }
+                            if (col.key === "drag") {
+                              return (
+                                <div
+                                  key={col.key}
+                                  {...(dragDisabled ? {} : dragProvided.dragHandleProps)}
+                                  className={col.width}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <GripVertical className="h-4 w-4 text-slate-400" />
+                                </div>
+                              );
+                            }
 
-                          if (col.key === "days_open") {
-                            const days = daysBetween(
-                              log.date_called_out,
-                              normalizeYMD(viewDate)
-                            );
+                            if (col.key === "days_open") {
+                              const days = daysBetween(
+                                log.date_called_out,
+                                normalizeYMD(viewDate)
+                              );
+                              return <div key={col.key} className={col.width}>{days || "-"}</div>;
+                            }
+
                             return (
                               <div key={col.key} className={col.width}>
-                                {days || "-"}
+                                {isEditing ? (
+                                  <Input
+                                    value={editData[col.key] || ""}
+                                    onChange={(e) => handleChange(col.key, e.target.value)}
+                                    onKeyDown={handleKeyNav}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="h-8"
+                                  />
+                                ) : (
+                                  <div className="truncate">{log[col.key] || "-"}</div>
+                                )}
                               </div>
                             );
-                          }
+                          })}
 
-                          return (
-                            <div key={col.key} className={col.width}>
-                              {isEditing ? (
-                                <Input
-                                  value={editData[col.key] || ""}
-                                  onChange={(e) =>
-                                    handleChange(col.key, e.target.value)
-                                  }
-                                  onKeyDown={handleKeyNav}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="h-8"
-                                />
-                              ) : (
-                                <div className="truncate">
-                                  {log[col.key] || "-"}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
+                          <div className="w-[10%] flex gap-1 justify-center">
+                            {isEditing ? (
+                              <>
+                                <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); saveEdit(); }}>
+                                  <Check className="h-4 w-4" />
+                                </Button>
+                                <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); cancelEdit(); }}>
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </>
+                            ) : (
+                              <>
+                                <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); startEdit(log); }}>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); onCopy?.(log); }}>
+                                  <Copy className="h-4 w-4 text-sky-600" />
+                                </Button>
+                                <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); onDelete(log.id); }}>
+                                  <Trash2 className="h-4 w-4 text-red-500" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
 
-                        {/* ACTIONS */}
-                        <div className="w-[10%] flex gap-1 justify-center">
-                          {isEditing ? (
-                            <>
-                              <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); saveEdit(); }}>
-                                <Check className="h-4 w-4" />
-                              </Button>
-                              <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); cancelEdit(); }}>
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </>
-                          ) : (
-                            <>
-                              <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); startEdit(log); }}>
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); onCopy?.(log); }}>
-                                <Copy className="h-4 w-4 text-sky-600" />
-                              </Button>
-                              <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); onDelete(log.id); }}>
-                                <Trash2 className="h-4 w-4 text-red-500" />
-                              </Button>
-                            </>
-                          )}
                         </div>
-
-                      </div>
-                    )}
-                  </Draggable>
-                );
-              })}
+                      )}
+                    </Draggable>
+                  );
+                })
+              )}
 
               {provided.placeholder}
             </div>
