@@ -416,23 +416,49 @@ function DispatchBoard({ dispatchQuery }) {
                     draggable
                     onDragStart={() => handleDragStart(r, driver)}
                     onClick={() => handleClickRun(r)}
-                    className={`px-3 py-2 rounded-xl text-white ${color} shadow cursor-pointer`}
+                    className="relative w-[140px] h-[60px] cursor-pointer"
                   >
-                    <div className="flex flex-col items-center justify-center text-center leading-tight">
+                    
+                    {/* 🚛 TRUCK SVG BACKGROUND */}
+                    <svg
+                      viewBox="0 0 300 120"
+                      className={`absolute inset-0 w-full h-full ${color}`}
+                    >
+                      {/* Trailer */}
+                      <rect x="5" y="30" width="150" height="50" rx="4" fill="currentColor" />
 
-                      {/* 🔹 Customer */}
+                      {/* Connector */}
+                      <rect x="155" y="50" width="15" height="10" fill="currentColor" />
+
+                      {/* Cab */}
+                      <path
+                        d="M170 60 L200 60 L210 45 L240 45 L240 85 L170 85 Z"
+                        fill="currentColor"
+                      />
+
+                      {/* Wheels */}
+                      <circle cx="50" cy="90" r="10" fill="black" />
+                      <circle cx="90" cy="90" r="10" fill="black" />
+                      <circle cx="190" cy="90" r="10" fill="black" />
+                      <circle cx="230" cy="90" r="10" fill="black" />
+                    </svg>
+
+                    {/* 🔤 TEXT CONTENT */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-2 leading-tight pointer-events-none">
+
+                      {/* Customer */}
                       <div className="flex items-center gap-1">
-                        <Building2 className="w-3 h-3 opacity-80" />
-                        <span className="text-xs font-semibold truncate">
+                        <Building2 className="w-3 h-3 opacity-90" />
+                        <span className="text-[10px] font-semibold truncate">
                           {r?.customer || r?.company || "No Name"}
                         </span>
                       </div>
 
-                      {/* 🔹 City */}
+                      {/* City */}
                       {r?.city && (
                         <div className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3 opacity-70" />
-                          <span className="text-[10px] opacity-80 truncate">
+                          <MapPin className="w-3 h-3 opacity-80" />
+                          <span className="text-[9px] opacity-90 truncate">
                             {r.city}
                           </span>
                         </div>
