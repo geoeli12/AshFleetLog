@@ -31,6 +31,12 @@ function toYMD(value) {
   return format(d, "yyyy-MM-dd");
 }
 
+const parseCityFromAddress = (address) => {
+  if (!address) return "";
+  const parts = String(address).split(",").map(s => s.trim());
+  return parts.length >= 2 ? parts[parts.length - 2] : "";
+};
+
 function unwrapListResult(list) {
   if (Array.isArray(list)) return list;
   if (Array.isArray(list?.data)) return list.data;
@@ -238,28 +244,172 @@ export default function PickUps() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }) => api.entities.PickupOrder.update(id, toDbPayload(data)),
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
+
       const nextData = variables?.data || {};
       const id = variables?.id;
 
-      if (id != null) {
-        const pickedYmd = toYMD(nextData.date_picked_up);
-        const dispatchedNow = Boolean((nextData.driver || "").toString().trim()) && pickedYmd === selectedDate;
+      const driverName = String(nextData?.driver || "").trim();
+      const previousDriver = String(nextData?._previousDriver || "").trim();
+      const orderDate = toYMD(nextData?.date_called_out);
 
-        if (dispatchedNow) {
-          setDispatchedOrderIds((prev) => {
-            const cleaned = prev.filter((x) => String(x) !== String(id));
-            return [...cleaned, String(id)];
+      // 🚨 HANDLE DRIVER REMOVAL (MATCH DISPATCH LOGIC)
+      if (!driverName && previousDriver) {
+
+        const existingShiftList = await api.entities.Shift.filter(
+          {
+            driver_name: previousDriver,
+            shift_date: orderDate,
+            status: "active"
+          },
+          "-created_date",
+          1
+        );
+
+        const shiftArray = Array.isArray(existingShiftList)
+          ? existingShiftList
+          : existingShiftList?.data || [];
+
+        let shift = shiftArray[0];
+
+        if (shift) {
+
+          const existingRuns = await api.entities.Run.filter({
+            shift_id: shift.id
           });
 
-          setManualOrderIds((prev) => prev.filter((x) => String(x) !== String(id)));
-        } else {
-          setDispatchedOrderIds((prev) => prev.filter((x) => String(x) !== String(id)));
-          setManualOrderIds((prev) => {
-            const cleaned = prev.filter((x) => String(x) !== String(id));
-            return [...cleaned, String(id)];
-          });
+          const runsArray = Array.isArray(existingRuns)
+            ? existingRuns
+            : existingRuns?.data || [];
+
+          const orderFromDb = await api.entities.PickupOrder.get(id);
+          const fullOrder = orderFromDb?.data || orderFromDb;
+
+          // 🎯 MATCH EXACT RUN
+          const matchingRuns = runsArray.filter(r =>
+            String(r.trailer_dropped || "") === String(fullOrder.dk_trl || "") &&
+            String(r.customer_name || "") === String(fullOrder.company || "") &&
+            String(r.run_date || "") === String(orderDate || "") &&
+            String(r.driver_name || "") === String(previousDriver || "") &&
+            String(r.run_type || "") === "pickup"
+          );
+
+          // ❌ DELETE MATCHING RUNS
+          for (const run of matchingRuns) {
+            await api.entities.Run.delete(run.id);
+          }
+
+          // 🧹 DELETE SHIFT IF EMPTY
+          const remainingRuns = await api.entities.Run.filter({ shift_id: shift.id });
+
+          const remainingArray = Array.isArray(remainingRuns)
+            ? remainingRuns
+            : remainingRuns?.data || [];
+
+          if (!remainingArray.length) {
+            await api.entities.Shift.delete(shift.id);
+          }
         }
+
+        queryClient.invalidateQueries({ queryKey: ["activeShifts"] });
+        queryClient.invalidateQueries({ queryKey: ["runs"] });
+
+        return;
+      }
+
+      // 🚨 ONLY CREATE IF DRIVER EXISTS
+      if (!driverName) {
+        queryClient.invalidateQueries({ queryKey: ["pickupOrders"] });
+        return;
+      }
+
+      try {
+
+        // 🔍 1. CHECK OR CREATE SHIFT
+        const existingShiftList = await api.entities.Shift.filter(
+          {
+            driver_name: driverName,
+            shift_date: orderDate,
+            status: "active"
+          },
+          "-created_date",
+          1
+        );
+
+        const shiftArray = Array.isArray(existingShiftList)
+          ? existingShiftList
+          : existingShiftList?.data || [];
+
+        let shift = shiftArray[0];
+
+        if (!shift) {
+          const createdShift = await api.entities.Shift.create({
+            driver_name: driverName,
+            shift_date: orderDate,
+            shift_type: "day",
+            status: "active",
+            start_time: new Date().toISOString(),
+            attendance_status: "present"
+          });
+
+          shift = createdShift?.id
+            ? createdShift
+            : createdShift?.data;
+        }
+
+        // 🔍 2. CHECK EXISTING RUNS
+        const existingRuns = await api.entities.Run.filter({
+          shift_id: shift.id
+        });
+
+        const runsArray = Array.isArray(existingRuns)
+          ? existingRuns
+          : existingRuns?.data || [];
+
+        // 🔥 GET FULL ORDER
+        const orderFromDb = await api.entities.PickupOrder.get(id);
+        const fullOrder = orderFromDb?.data || orderFromDb;
+
+        // 🔥 MATCH EXISTING RUN
+        const existingRun = runsArray.find(r =>
+          String(r.trailer_dropped || "") === String(fullOrder.dk_trl || "") &&
+          String(r.customer_name || "") === String(fullOrder.company || "") &&
+          String(r.run_date || "") === String(orderDate || "") &&
+          String(r.driver_name || "") === String(driverName || "") &&
+          String(r.run_type || "") === "pickup"
+        );
+
+        if (existingRun) return;
+
+        // 🔥 CITY
+        const city = parseCityFromAddress(fullOrder.location || "");
+
+        // 🟢 CREATE RUN
+        await api.entities.Run.create({
+          shift_id: shift.id,
+          driver_name: driverName,
+
+          dispatch_id: id,
+
+          run_date: orderDate,
+
+          customer_name: fullOrder.company || "",
+          trailer_dropped: fullOrder.dk_trl || "",
+
+          notes: fullOrder.notes || "",
+          city: city || "",
+
+          load_type: "pickup",
+          run_type: "pickup",
+
+          created_at: new Date().toISOString()
+        });
+
+        queryClient.invalidateQueries({ queryKey: ["activeShifts"] });
+        queryClient.invalidateQueries({ queryKey: ["runs"] });
+
+      } catch (err) {
+        console.error("Pickup → Shift sync failed:", err);
       }
 
       queryClient.invalidateQueries({ queryKey: ["pickupOrders"] });
@@ -634,7 +784,17 @@ export default function PickUps() {
           <PickupTable
             viewDate={selectedDate}
             logs={filteredLogs}
-            onUpdate={(id, data) => updateMutation.mutateAsync({ id, data })}
+
+            onUpdate={(id, data, originalRow) =>
+              updateMutation.mutateAsync({
+                id,
+                data: {
+                  ...data,
+                  _previousDriver: originalRow?.driver || ""
+                }
+              })
+            }
+
             onDelete={(id) => deleteMutation.mutateAsync(id)}
             onCopy={(row) => copyMutation.mutateAsync(row)}
             onMoveRow={handleMoveRow}
