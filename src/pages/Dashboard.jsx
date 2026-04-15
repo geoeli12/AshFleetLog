@@ -411,38 +411,51 @@ function DispatchBoard({ dispatchQuery }) {
                   : "bg-blue-500/90";
 
                 return (
-                  <div
-                    key={r.id}
-                    draggable
-                    onDragStart={() => handleDragStart(r, driver)}
-                    onClick={() => handleClickRun(r)}
-                    className={`relative w-[110px] h-[60px] text-white ${color} shadow cursor-pointer flex items-center justify-center`}
-                    style={{
-                      clipPath: "polygon(0% 0%, 80% 0%, 100% 50%, 80% 100%, 0% 100%)"
-                    }}
-                  >
-                    <div className="flex flex-col items-center justify-center text-center leading-tight pl-2 pr-5">
+                  <React.Fragment key={r.id}>
 
-                      {/* 🔹 Customer */}
-                      <div className="flex items-center gap-1">
-                        <Building2 className="w-3 h-3 opacity-80" />
-                        <span className="text-xs font-semibold truncate">
-                          {r?.customer || r?.company || "No Name"}
-                        </span>
-                      </div>
+                    {/* 🚛 TRAILER NUMBER PILL (NEW) */}
+                    <div
+                      className="px-3 h-[60px] text-white bg-slate-700/90 shadow flex items-center justify-center rounded-lg"
+                    >
+                      <span className="text-xs font-semibold">
+                        {r?.trailer_number || "TRL ?"}
+                      </span>
+                    </div>
 
-                      {/* 🔹 City */}
-                      {r?.city && (
+                    {/* 🔵 RUN ARROW */}
+                    <div
+                      draggable
+                      onDragStart={() => handleDragStart(r, driver)}
+                      onClick={() => handleClickRun(r)}
+                      className={`relative w-[110px] h-[60px] text-white ${color} shadow cursor-pointer flex items-center justify-center`}
+                      style={{
+                        clipPath: "polygon(0% 0%, 80% 0%, 100% 50%, 80% 100%, 0% 100%)"
+                      }}
+                    >
+                      <div className="flex flex-col items-center justify-center text-center leading-tight pl-2 pr-5">
+
+                        {/* 🔹 Customer */}
                         <div className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3 opacity-70" />
-                          <span className="text-[10px] opacity-80 truncate">
-                            {r.city}
+                          <Building2 className="w-3 h-3 opacity-80" />
+                          <span className="text-xs font-semibold truncate">
+                            {r?.customer || r?.company || "No Name"}
                           </span>
                         </div>
-                      )}
 
+                        {/* 🔹 City */}
+                        {r?.city && (
+                          <div className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3 opacity-70" />
+                            <span className="text-[10px] opacity-80 truncate">
+                              {r.city}
+                            </span>
+                          </div>
+                        )}
+
+                      </div>
                     </div>
-                  </div>
+
+                  </React.Fragment>
                 );
               })}
 
