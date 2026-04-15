@@ -421,7 +421,7 @@ function DispatchBoard({ dispatchQuery }) {
                       clipPath: "polygon(0% 0%, 80% 0%, 100% 50%, 80% 100%, 0% 100%)"
                     }}
                   >
-                    <div className="flex flex-col items-center justify-center text-center leading-tight">
+                    <div className="flex flex-col items-center justify-center text-center leading-tight pl-2 pr-5">
 
                       {/* 🔹 Customer */}
                       <div className="flex items-center gap-1">
