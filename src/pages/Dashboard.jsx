@@ -374,12 +374,13 @@ function DispatchBoard({ dispatchQuery }) {
               {/* 🔥 DEFAULT MAIN PILL (ALWAYS FIRST) */}
               <div
                 key={`main-${driver}`}
-                className="px-3 py-2 text-white bg-red-500/90 shadow flex items-center justify-center"
+                className="w-[90px] h-[60px] text-white bg-red-500/90 shadow flex items-center justify-center"
                 style={{
-                  clipPath: "polygon(50% 0%, 100% 35%, 100% 100%, 0% 100%, 0% 35%)"
+                  clipPath: "polygon(50% 0%, 100% 35%, 100% 100%, 0% 100%, 0% 35%)",
+                  paddingTop: "10px"
                 }}
               >
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col items-center justify-center text-center leading-tight">
 
                   {/* Customer */}
                   <div className="flex items-center gap-1">
@@ -417,7 +418,7 @@ function DispatchBoard({ dispatchQuery }) {
                     onClick={() => handleClickRun(r)}
                     className={`px-3 py-2 rounded-xl text-white ${color} shadow cursor-pointer`}
                   >
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col items-center justify-center text-center leading-tight">
 
                       {/* 🔹 Customer */}
                       <div className="flex items-center gap-1">
