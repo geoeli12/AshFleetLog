@@ -374,14 +374,17 @@ function DispatchBoard({ dispatchQuery }) {
               {/* 🔥 DEFAULT MAIN PILL (ALWAYS FIRST) */}
               <div
                 key={`main-${driver}`}
-                className="px-4 py-3 text-white bg-red-500/90 shadow house-shape flex items-center justify-center min-w-[120px] aspect-[1.1/1]"
+                className="px-3 py-2 text-white bg-red-500/90 shadow flex items-center justify-center"
+                style={{
+                  clipPath: "polygon(50% 0%, 100% 35%, 100% 100%, 0% 100%, 0% 35%)"
+                }}
               >
-                <div className="flex flex-col items-center justify-center text-center gap-1 px-2">
+                <div className="flex flex-col gap-1">
 
                   {/* Customer */}
                   <div className="flex items-center gap-1">
                     <Building2 className="w-3 h-3 opacity-80" />
-                    <span className="text-xs font-semibold truncate max-w-[90px]">
+                    <span className="text-xs font-semibold truncate">
                       Ash Pallet
                     </span>
                   </div>
@@ -412,14 +415,14 @@ function DispatchBoard({ dispatchQuery }) {
                     draggable
                     onDragStart={() => handleDragStart(r, driver)}
                     onClick={() => handleClickRun(r)}
-                    className={`px-4 py-3 text-white ${color} shadow cursor-pointer truck-shape flex items-center justify-center min-w-[120px] min-h-[70px] hover:translate-x-1 transition`}
+                    className={`px-3 py-2 rounded-xl text-white ${color} shadow cursor-pointer`}
                   >
-                    <div className="flex flex-col items-center justify-center text-center gap-1 px-2">
+                    <div className="flex flex-col gap-1">
 
                       {/* 🔹 Customer */}
                       <div className="flex items-center gap-1">
                         <Building2 className="w-3 h-3 opacity-80" />
-                        <span className="text-xs font-semibold truncate max-w-[90px]">
+                        <span className="text-xs font-semibold truncate">
                           {r?.customer || r?.company || "No Name"}
                         </span>
                       </div>
