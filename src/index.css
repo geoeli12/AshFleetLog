@@ -1,10 +1,9 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-        :root {
+  :root {
     --background: 36 70% 96%;
     --foreground: 24 16% 12%;
     --card: 0 0% 100%;
@@ -35,7 +34,7 @@
     --sidebar-ring: 43 96% 56%;
   }
 
-    .dark {
+  .dark {
     --background: 0 0% 4%;
     --foreground: 0 0% 98%;
     --card: 0 0% 7%;
@@ -71,8 +70,6 @@
   }
 }
 
-
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -83,3 +80,36 @@
   }
 }
 
+/* 🔥 NEW SHAPES (GLOBAL, REUSABLE) */
+@layer components {
+
+  /* 🏠 HOUSE SHAPE (DEFAULT RED PILL) */
+  .house-shape {
+    clip-path: polygon(
+      50% 0%,
+      100% 35%,
+      100% 100%,
+      0% 100%,
+      0% 35%
+    );
+  }
+
+  /* 🚛 RIGHT-FACING TRUCK SHAPE */
+  .truck-shape {
+    clip-path: polygon(
+      0% 0%, 
+      75% 0%, 
+      85% 20%, 
+      100% 20%, 
+      100% 70%, 
+      85% 70%, 
+      80% 100%, 
+      0% 100%, 
+      0% 70%, 
+      65% 70%, 
+      65% 20%, 
+      0% 20%
+    );
+  }
+
+}
