@@ -100,31 +100,22 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
 
   }, [customersIL, customersPA]);
 
-  const normalizeCompanyKey = (v) =>
-    (v ?? "")
-      .toString()
-      .trim()
-      .toLowerCase()
-      .replace(/^\d+\s+/, "")
-      .replace(/^[-–—\s]+/, "")
-      .trim();
-
   const findCustomer = (companyValue) => {
 
-    const key = normalizeCompanyKey(companyValue);
-    if (!key) return null;
+    const q = (companyValue || "").toLowerCase().trim();
+    if (!q) return null;
 
     const regionUpper = (region || "").toString().trim().toUpperCase();
 
-    const candidates = customerDirectory.filter(
-      (r) => normalizeCompanyKey(r.customer) === key
+    const matches = customerDirectory.filter(
+      (r) => String(r.customer || "").toLowerCase() === q
     );
 
-    if (!candidates.length) return null;
+    if (!matches.length) return null;
 
-    const preferred = candidates.find((c) => c.region === regionUpper);
+    const preferred = matches.find((c) => c.region === regionUpper);
 
-    return preferred || candidates[0];
+    return preferred || matches[0];
 
   };
 
