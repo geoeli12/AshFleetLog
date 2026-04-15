@@ -422,18 +422,18 @@ function DispatchBoard({ dispatchQuery }) {
                     {/* 🚛 TRUCK SVG BACKGROUND */}
                     <svg
                       viewBox="0 0 300 120"
-                      className={`absolute inset-0 w-full h-full ${color}`}
+                      className="absolute inset-0 w-full h-full"
                     >
                       {/* Trailer */}
-                      <rect x="5" y="30" width="150" height="50" rx="4" fill="currentColor" />
+                      <rect x="5" y="30" width="150" height="50" rx="4" fill="white" />
 
                       {/* Connector */}
-                      <rect x="155" y="50" width="15" height="10" fill="currentColor" />
+                      <rect x="155" y="50" width="15" height="10" fill="white" />
 
                       {/* Cab */}
                       <path
                         d="M170 60 L200 60 L210 45 L240 45 L240 85 L170 85 Z"
-                        fill="currentColor"
+                        fill="white"
                       />
 
                       {/* Wheels */}
@@ -444,7 +444,7 @@ function DispatchBoard({ dispatchQuery }) {
                     </svg>
 
                     {/* 🔤 TEXT CONTENT */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-2 leading-tight pointer-events-none">
+                    <div className="absolute left-[5px] top-[30px] w-[150px] h-[50px] flex flex-col items-center justify-center text-center text-black px-2 leading-tight pointer-events-none">ents-none">
 
                       {/* Customer */}
                       <div className="flex items-center gap-1">
