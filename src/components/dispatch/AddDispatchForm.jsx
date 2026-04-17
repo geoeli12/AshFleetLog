@@ -659,7 +659,7 @@ export default function AddDispatchForm({ onAdd, defaultDate, region }) {
 
                   {isCompanyFocused && companyMatches.length > 0 ? (
                     <div
-                      className="absolute left-0 top-full z-[1000] mt-2 w-full rounded-2xl border border-slate-200 bg-white shadow-xl"
+                      className="absolute left-0 top-full z-[1000] mt-2 min-w-[400px] w-max max-w-[600px] rounded-2xl border border-slate-200 bg-white shadow-xl"
                       role="listbox"
                     >
                       <div className="max-h-72 overflow-y-auto p-1">
