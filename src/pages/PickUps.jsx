@@ -287,10 +287,8 @@ export default function PickUps() {
 
           // 🎯 MATCH EXACT RUN
           const matchingRuns = runsArray.filter(r =>
-            String(r.trailer_dropped || "") === String(fullOrder.dk_trl || "") &&
-            String(r.customer_name || "") === String(fullOrder.company || "") &&
-            String(r.run_date || "") === String(orderDate || "") &&
-            String(r.driver_name || "") === String(previousDriver || "") &&
+            r.dispatch_id && id &&
+            String(r.dispatch_id) === String(id) &&
             String(r.run_type || "") === "pickup"
           );
 
@@ -372,11 +370,8 @@ export default function PickUps() {
 
         // 🔥 MATCH EXISTING RUN
         const existingRun = runsArray.find(r =>
-          String(r.trailer_dropped || "") === String(fullOrder.dk_trl || "") &&
-          String(r.customer_name || "") === String(fullOrder.company || "") &&
-          String(r.run_date || "") === String(orderDate || "") &&
-          String(r.driver_name || "") === String(driverName || "") &&
-          String(r.run_type || "") === "pickup"
+          r.dispatch_id && id &&
+          String(r.dispatch_id) === String(id)
         );
 
         if (existingRun) return;
@@ -389,7 +384,7 @@ export default function PickUps() {
           shift_id: shift.id,
           driver_name: driverName,
 
-          dispatch_id: id,
+          dispatch_id: id, // 🔥 CRITICAL
 
           run_date: orderDate,
 
@@ -399,7 +394,7 @@ export default function PickUps() {
           notes: fullOrder.notes || "",
           city: city || "",
 
-          load_type: "pickup",
+          load_type: fullOrder.load_type || "pickup", // optional if you want better labeling
           run_type: "pickup",
 
           created_at: new Date().toISOString()
