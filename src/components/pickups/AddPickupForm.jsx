@@ -172,7 +172,15 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
 
   if (!isExpanded) {
     return (
-      <Button onClick={() => setIsExpanded(true)} className="rounded-xl h-12 px-5">
+      <Button
+        onClick={() => {
+          setForm(getInitialForm(defaultCalledOutDate, region));
+          setIsCompanyFocused(false);
+          ignoreCompanyBlurRef.current = false;
+          setIsExpanded(true);
+        }}
+        className="rounded-xl h-12 px-5"
+      >
         <Plus className="h-4 w-4 mr-2" />
         New Pick Up
       </Button>
@@ -199,7 +207,12 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
           <Button
             variant="outline"
             className="rounded-xl"
-            onClick={() => setIsExpanded(false)}
+            onClick={() => {
+              setForm(getInitialForm(defaultCalledOutDate, region));
+              setIsCompanyFocused(false);
+              ignoreCompanyBlurRef.current = false;
+              setIsExpanded(false);
+            }}
           >
             Close
           </Button>
@@ -381,7 +394,12 @@ export default function AddPickupForm({ onAdd, defaultCalledOutDate, region }) {
             type="button"
             variant="outline"
             className="rounded-xl"
-            onClick={() => setIsExpanded(false)}
+            onClick={() => {
+              setForm(getInitialForm(defaultCalledOutDate, region));
+              setIsCompanyFocused(false);
+              ignoreCompanyBlurRef.current = false;
+              setIsExpanded(false);
+            }}
           >
             Cancel
           </Button>
