@@ -470,32 +470,52 @@ function DispatchBoard({ dispatchQuery, pickupQuery }) {
                       draggable
                       onDragStart={() => handleDragStart(r, driver)}
                       onClick={() => handleClickRun(r)}
-                      className={`relative w-[110px] h-[60px] text-white ${color} shadow cursor-pointer flex items-center justify-center`}
+                      className={`relative min-w-[110px] w-auto h-[60px] px-4 text-white ${color} shadow cursor-pointer flex items-center justify-center`}
                       style={{
                         clipPath: "polygon(0% 0%, 80% 0%, 100% 50%, 80% 100%, 0% 100%)"
                       }}
                     >
-                      <div className="flex flex-col items-center justify-center text-center leading-tight pl-2 pr-5">
+                      <div className="relative w-full h-full">
 
-                        {/* 🔹 Customer */}
-                        <div className="flex items-center gap-1">
-                          <Building2 className="w-3 h-3 opacity-80" />
-                          <span className="text-xs font-semibold truncate">
-                            {r?.customer || r?.company || "No Name"}
-                          </span>
-                        </div>
-
-                        {/* 🔹 City */}
-                        {r?.city && (
-                          <div className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3 opacity-70" />
-                            <span className="text-[10px] opacity-80 truncate">
-                              {r.city}
-                            </span>
+                        {/* 🔥 ETA TOP LEFT */}
+                        {r?.eta && (
+                          <div className="absolute top-1 left-2 text-[10px] font-semibold opacity-90">
+                            {r.eta}
                           </div>
                         )}
 
+                        {/* 🔹 MAIN CONTENT CENTERED */}
+                        <div className="flex flex-col items-center justify-center text-center leading-tight pl-2 pr-5 h-full">
+
+                          {/* 🔹 Customer */}
+                          <div className="flex items-center gap-1">
+                            <Building2 className="w-3 h-3 opacity-80" />
+
+                            <span
+                              className={`text-xs font-semibold leading-tight text-center ${
+                                (r?.customer || r?.company || "").length > 25
+                                  ? "max-w-[90px] break-words"
+                                  : "whitespace-nowrap"
+                              }`}
+                            >
+                              {r?.customer || r?.company || "No Name"}
+                            </span>
+                          </div>
+
+                          {/* 🔹 City */}
+                          {r?.city && (
+                            <div className="flex items-center gap-1">
+                              <MapPin className="w-3 h-3 opacity-70" />
+                              <span className="text-[10px] opacity-80 truncate">
+                                {r.city}
+                              </span>
+                            </div>
+                          )}
+
+                        </div>
+
                       </div>
+
                     </div>
 
                   </React.Fragment>
