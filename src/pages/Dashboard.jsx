@@ -449,7 +449,7 @@ function DispatchBoard({ dispatchQuery, pickupQuery }) {
                       className="px-3 h-[60px] text-white bg-slate-700/90 shadow flex items-center justify-center rounded-lg"
                     >
                       <span className="text-xs font-semibold">
-                        {r?.trailer_number || "TRL ?"}
+                        {r?.trailer_number || r?.dk_trl || "TRL ?"}
                       </span>
                     </div>
 
