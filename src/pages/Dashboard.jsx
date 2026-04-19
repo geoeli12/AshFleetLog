@@ -479,13 +479,13 @@ function DispatchBoard({ dispatchQuery, pickupQuery }) {
 
                         {/* 🔥 ETA TOP LEFT */}
                         {r?.eta && (
-                          <div className="absolute top-1 left-2 text-[10px] font-semibold opacity-90">
+                          <div className="absolute bottom-1 left-2 text-[10px] font-semibold text-black opacity-90">
                             {r.eta}
                           </div>
                         )}
 
                         {/* 🔹 MAIN CONTENT CENTERED */}
-                        <div className="flex flex-col items-center justify-center text-center leading-tight pl-2 pr-5 h-full">
+                        <div className="flex flex-col items-center justify-start text-center leading-tight pl-2 pr-5 h-full pt-2">
 
                           {/* 🔹 Customer */}
                           <div className="flex items-center gap-1">
