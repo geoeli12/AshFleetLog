@@ -124,6 +124,12 @@ function dateOnlyLocal(dt) {
   return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
 }
 
+function parseCityFromAddress(address) {
+  if (!address) return "";
+  const parts = String(address).split(",").map(s => s.trim());
+  return parts.length >= 2 ? parts[parts.length - 2] : "";
+}
+
 export default function Dashboard() {
 
   const dispatchQuery = useQuery({
@@ -266,7 +272,13 @@ function DispatchBoard({ dispatchQuery, pickupQuery }) {
         : []),
 
       ...(Array.isArray(pickupQuery.data)
-        ? pickupQuery.data.map(o => ({ ...o, __type: "pickup" }))
+        ? pickupQuery.data.map(o => ({
+            ...o,
+            __type: "pickup",
+
+            // 🔥 ADD THIS LINE RIGHT HERE
+            city: o?.city || parseCityFromAddress(o?.location || "")
+          }))
         : [])
     ]
     .filter(o => {
