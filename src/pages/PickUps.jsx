@@ -251,7 +251,15 @@ export default function PickUps() {
 
       const driverName = String(nextData?.driver || "").trim();
       const previousDriver = String(nextData?._previousDriver || "").trim();
-      const orderDate = toYMD(nextData?.date_called_out);
+      // const orderDate = toYMD(nextData?.date_called_out);
+
+      const orderFromDb = await api.entities.PickupOrder.get(id);
+      const fullOrder = orderFromDb?.data || orderFromDb;
+
+      const orderDate =
+        toYMD(nextData?.date_called_out) ||
+        toYMD(fullOrder?.date_called_out) ||
+        new Date().toISOString().split("T")[0];
 
       // 🚨 HANDLE DRIVER REMOVAL (MATCH DISPATCH LOGIC)
       if (!driverName && previousDriver) {
@@ -287,9 +295,10 @@ export default function PickUps() {
 
           // 🎯 MATCH EXACT RUN
           const matchingRuns = runsArray.filter(r =>
-            r.dispatch_id && id &&
-            String(r.dispatch_id) === String(id) &&
-            String(r.run_type || "") === "pickup"
+            String(r.trailer_dropped || "") === String(fullOrder.dk_trl || "") &&
+            String(r.customer_name || "") === String(fullOrder.company || "") &&
+            String(r.run_date || "") === String(orderDate || "") &&
+            String(r.driver_name || "") === String(previousDriver || "")
           );
 
           // ❌ DELETE MATCHING RUNS
@@ -370,8 +379,10 @@ export default function PickUps() {
 
         // 🔥 MATCH EXISTING RUN
         const existingRun = runsArray.find(r =>
-          r.dispatch_id && id &&
-          String(r.dispatch_id) === String(id)
+          String(r.trailer_dropped || "") === String(fullOrder.dk_trl || "") &&
+          String(r.customer_name || "") === String(fullOrder.company || "") &&
+          String(r.run_date || "") === String(orderDate || "") &&
+          String(r.driver_name || "") === String(driverName || "")
         );
 
         if (existingRun) return;

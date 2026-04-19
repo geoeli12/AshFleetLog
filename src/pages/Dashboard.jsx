@@ -134,6 +134,14 @@ export default function Dashboard() {
     },
   });
 
+  const pickupQuery = useQuery({
+    queryKey: ["pickupOrders"],
+    queryFn: async () => {
+      const list = await api.entities.PickupOrder.list("-date_called_out");
+      return Array.isArray(list) ? list : [];
+    },
+  });
+
   const counts = useMemo(() => {
     const orders = Array.isArray(dispatchQuery.data) ? dispatchQuery.data : [];
     const now = new Date();
@@ -216,7 +224,10 @@ export default function Dashboard() {
                   <StatPill label="This month" value={counts.monthCount} />
                 </div>
 
-                <DispatchBoard dispatchQuery={dispatchQuery} />
+                <DispatchBoard 
+                  dispatchQuery={dispatchQuery} 
+                  pickupQuery={pickupQuery} 
+                />
 
               </div>
 
@@ -228,7 +239,7 @@ export default function Dashboard() {
   );
 }
 
-function DispatchBoard({ dispatchQuery }) {
+function DispatchBoard({ dispatchQuery, pickupQuery }) {
 
   const [dragItem, setDragItem] = useState(null);
   const [dragOverDriver, setDragOverDriver] = useState(null);
@@ -248,8 +259,23 @@ function DispatchBoard({ dispatchQuery }) {
   };
 
   const groupedByDriver = useMemo(() => {
-    const orders = (Array.isArray(dispatchQuery.data) ? dispatchQuery.data : [])
-      .filter(o => o?.date === selectedDate);
+
+    const orders = [
+      ...(Array.isArray(dispatchQuery.data)
+        ? dispatchQuery.data.map(o => ({ ...o, __type: "delivery" }))
+        : []),
+
+      ...(Array.isArray(pickupQuery.data)
+        ? pickupQuery.data.map(o => ({ ...o, __type: "pickup" }))
+        : [])
+    ]
+    .filter(o => {
+      const orderDate =
+        o?.date ||                 // dispatch_orders
+        o?.date_called_out;        // pickup_orders
+
+      return orderDate === selectedDate;
+    });
 
     const map = {};
 
@@ -260,7 +286,13 @@ function DispatchBoard({ dispatchQuery }) {
         if (region !== selectedRegion) continue;
       }
 
-      const driver = String(o?.driver_name || "").trim();
+      // const driver = String(o?.driver_name || "").trim();
+
+      const driver = String(
+        o?.driver_name || 
+        o?.driver || 
+        o?.delivered_by || ""
+      ).trim();
 
       // ❌ SKIP UNASSIGNED RUNS COMPLETELY
       if (!driver) continue;
@@ -270,7 +302,7 @@ function DispatchBoard({ dispatchQuery }) {
     }
 
     return map;
-  }, [dispatchQuery.data, selectedRegion, selectedDate]);
+  }, [dispatchQuery.data, pickupQuery.data, selectedRegion, selectedDate]);
 
   const handleDragStart = (run, fromDriver) => {
     setDragItem({ run, fromDriver });
@@ -403,8 +435,7 @@ function DispatchBoard({ dispatchQuery }) {
 
               {/* 🔥 ACTUAL RUNS */}
               {runs.map((r) => {
-                const type = String(r?.type || r?.load_type || "").toLowerCase();
-                const isPickup = type.includes("pickup");
+                const isPickup = r?.__type === "pickup";
 
                 const color = isPickup
                   ? "bg-green-500/90"
