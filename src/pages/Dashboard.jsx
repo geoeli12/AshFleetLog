@@ -470,7 +470,7 @@ function DispatchBoard({ dispatchQuery, pickupQuery }) {
                       draggable
                       onDragStart={() => handleDragStart(r, driver)}
                       onClick={() => handleClickRun(r)}
-                      className={`relative min-w-[110px] w-auto h-[60px] px-4 text-white ${color} shadow cursor-pointer flex items-center justify-center`}
+                      className={`relative min-w-[110px] w-auto h-[60px] px-2 text-white ${color} shadow cursor-pointer flex items-center justify-center`}
                       style={{
                         clipPath: "polygon(0% 0%, 80% 0%, 100% 50%, 80% 100%, 0% 100%)"
                       }}
@@ -479,7 +479,7 @@ function DispatchBoard({ dispatchQuery, pickupQuery }) {
 
                         {/* 🔥 ETA TOP LEFT */}
                         {r?.eta && (
-                          <div className="absolute bottom-1 left-2 text-[10px] font-semibold text-red-500 opacity-90">
+                          <div className="absolute bottom-1 left-0 text-[10px] font-semibold text-yellow-300 opacity-90">
                             {r.eta}
                           </div>
                         )}
