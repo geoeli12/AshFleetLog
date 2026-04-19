@@ -485,14 +485,14 @@ function DispatchBoard({ dispatchQuery, pickupQuery }) {
                         )}
 
                         {/* 🔹 MAIN CONTENT CENTERED */}
-                        <div className="flex flex-col items-start justify-start text-left leading-tight pl-2 pr-5 h-full pt-2">
+                        <div className="flex flex-col items-start justify-start text-left leading-tight pl-0 pr-5 h-full pt-2">
 
                           {/* 🔹 Customer */}
                           <div className="flex items-center gap-1">
                             <Building2 className="w-3 h-3 opacity-80" />
 
                             <span
-                              className={`text-xs font-semibold leading-tight text-center ${
+                              className={`text-xs font-semibold leading-tight text-left ${
                                 (r?.customer || r?.company || "").length > 25
                                   ? "max-w-[90px] break-words"
                                   : "whitespace-nowrap"
