@@ -96,7 +96,7 @@ export default function DriverLog() {
         : null;
 
     const { data: driverOrders = [], isLoading: runsLoading } = useQuery({
-        queryKey: ['driverOrders', selectedShift?.id, selectedDate],
+        queryKey: ['driverOrders', selectedDriver, selectedDate],
         queryFn: async () => {
 
             if (!selectedShift) return [];
@@ -106,20 +106,28 @@ export default function DriverLog() {
             // 🔵 DISPATCH ORDERS (DELIVERY)
             const dispatch = await api.entities.DispatchOrder.filter({
                 delivered_by: selectedShift.driver_name,
-                date: selectedDateStr
+                //date: selectedDateStr
             });
 
             // 🟢 PICKUP ORDERS
             const pickups = await api.entities.PickupOrder.filter({
                 driver: selectedShift.driver_name,
-                date_called_out: selectedDateStr
+                //date_called_out: selectedDateStr
             });
 
             const dispatchArr = Array.isArray(dispatch) ? dispatch : dispatch?.data || [];
             const pickupArr = Array.isArray(pickups) ? pickups : pickups?.data || [];
 
+            const dispatchFiltered = dispatchArr.filter(d =>
+                String(d.date).startsWith(selectedDateStr)
+            );
+
+            const pickupFiltered = pickupArr.filter(p =>
+                String(p.date_called_out).startsWith(selectedDateStr)
+            );
+
             // 🔥 NORMALIZE (MATCH YOUR REAL COLUMNS)
-            const normalizedDispatch = dispatchArr.map(d => ({
+            const normalizedDispatch = dispatchFiltered.map(d => ({
                 id: `d-${d.id}`,
                 type: "delivery",
 
@@ -131,12 +139,12 @@ export default function DriverLog() {
                 raw: d
             }));
 
-            const normalizedPickup = pickupArr.map(p => ({
+            const normalizedPickup = pickupFiltered.map(p => ({
                 id: `p-${p.id}`,
                 type: "pickup",
 
                 customer: p.company || p.customer || "",
-                trailer_number: p.dk_trl || "",   // ✅ CORRECT (IMPORTANT FIX)
+                trailer_number: p.dk_trl || p.trailer_number || "",   // ✅ CORRECT (IMPORTANT FIX)
                 notes: p.notes || "",
 
                 date: p.date_called_out,
@@ -145,7 +153,7 @@ export default function DriverLog() {
 
             return [...normalizedDispatch, ...normalizedPickup];
         },
-        enabled: !!selectedShift
+        enabled: !!selectedDriver
     });
 
     const startShiftMutation = useMutation({
