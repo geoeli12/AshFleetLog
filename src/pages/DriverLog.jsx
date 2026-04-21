@@ -37,6 +37,12 @@ function computeAttendanceStatus(shiftType, startTime) {
     return 'present';
 }
 
+function parseCityFromAddress(address) {
+    if (!address) return "";
+    const parts = String(address).split(",").map(s => s.trim());
+    return parts.length >= 2 ? parts[parts.length - 2] : "";
+}
+
 export default function DriverLog() {
     const [showAddRun, setShowAddRun] = useState(false);
     const [selectedDriver, setSelectedDriver] = useState('');
@@ -103,55 +109,58 @@ export default function DriverLog() {
 
             const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
 
-            // 🔵 DISPATCH ORDERS (DELIVERY)
+            // 🔵 GET DATA
             const dispatch = await api.entities.DispatchOrder.filter({
-                delivered_by: selectedShift.driver_name,
-                //date: selectedDateStr
+                delivered_by: selectedShift.driver_name
             });
 
-            // 🟢 PICKUP ORDERS
             const pickups = await api.entities.PickupOrder.filter({
-                driver: selectedShift.driver_name,
-                //date_called_out: selectedDateStr
+                driver: selectedShift.driver_name
             });
 
             const dispatchArr = Array.isArray(dispatch) ? dispatch : dispatch?.data || [];
             const pickupArr = Array.isArray(pickups) ? pickups : pickups?.data || [];
 
-            const dispatchFiltered = dispatchArr.filter(d =>
-                String(d.date).startsWith(selectedDateStr)
-            );
+            // 🔥 FILTER BY DATE (SAME AS DASHBOARD LOGIC)
+            const filteredOrders = [
 
-            const pickupFiltered = pickupArr.filter(p =>
-                String(p.date_called_out).startsWith(selectedDateStr)
-            );
+                ...dispatchArr
+                    .filter(d => String(d.date).startsWith(selectedDateStr))
+                    .map(d => ({
+                        id: `d-${d.id}`,
+                        __type: "delivery",
 
-            // 🔥 NORMALIZE (MATCH YOUR REAL COLUMNS)
-            const normalizedDispatch = dispatchFiltered.map(d => ({
-                id: `d-${d.id}`,
-                type: "delivery",
+                        customer: d.customer || d.company || d.name || "",
+                        trailer_number: d.trailer_number || "",
+                        notes: d.notes || "",
 
-                customer: d.customer || d.company || "",
-                trailer_number: d.trailer_number || "",   // ✅ CORRECT
-                notes: d.notes || "",
+                        city: d.city || parseCityFromAddress(d.location || ""),
 
-                date: d.date,
-                raw: d
-            }));
+                        eta: d.eta || d.time || d.appt_time || "",
+                        date: d.date,
+                        raw: d
+                    })),
 
-            const normalizedPickup = pickupFiltered.map(p => ({
-                id: `p-${p.id}`,
-                type: "pickup",
+                ...pickupArr
+                    .filter(p => String(p.date_called_out).startsWith(selectedDateStr))
+                    .map(p => ({
+                        id: `p-${p.id}`,
+                        __type: "pickup",
 
-                customer: p.company || p.customer || "",
-                trailer_number: p.dk_trl || p.trailer_number || "",   // ✅ CORRECT (IMPORTANT FIX)
-                notes: p.notes || "",
+                        customer: p.company || p.customer || "",
+                        trailer_number: p.dk_trl || p.trailer_number || "",
+                        notes: p.notes || "",
 
-                date: p.date_called_out,
-                raw: p
-            }));
+                        // 🔥 MATCH DASHBOARD CITY LOGIC
+                        city: p.city || parseCityFromAddress(p.location || ""),
 
-            return [...normalizedDispatch, ...normalizedPickup];
+                        eta: p.eta || p.time || p.appt_time || "",
+                        date: p.date_called_out,
+                        raw: p
+                    }))
+            ];
+
+            return filteredOrders;
         },
         enabled: !!selectedDriver
     });
@@ -529,7 +538,7 @@ export default function DriverLog() {
                                                     <RunCard
                                                         run={{
                                                             ...run,
-                                                            run_type: run.type, // 🔥 THIS IS THE FIX
+                                                            run_type: run.__type, // 🔥 THIS IS THE FIX
                                                             trailer_dropped: run.trailer_number,
                                                             customer_name: run.customer
                                                         }}
