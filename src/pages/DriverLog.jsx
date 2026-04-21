@@ -95,20 +95,56 @@ export default function DriverLog() {
         ? allActiveShifts.find(shift => shift.driver_name === selectedDriver)
         : null;
 
-    const { data: runs = [], isLoading: runsLoading } = useQuery({
-        queryKey: ['runs', selectedShift?.id],
+    const { data: driverOrders = [], isLoading: runsLoading } = useQuery({
+        queryKey: ['driverOrders', selectedShift?.id, selectedDate],
         queryFn: async () => {
-          if (!selectedShift) return [];
 
-          const results = await api.entities.Run.filter({}, '-created_date');
+            if (!selectedShift) return [];
 
-          const runsArray = Array.isArray(results) ? results : results?.data || [];
+            const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
 
-          return runsArray.filter(r =>
-            String(r.shift_id || r.shift || r.shiftId) === String(selectedShift.id)
-          );
+            // 🔵 DISPATCH ORDERS (DELIVERY)
+            const dispatch = await api.entities.DispatchOrder.filter({
+                delivered_by: selectedShift.driver_name,
+                date: selectedDateStr
+            });
+
+            // 🟢 PICKUP ORDERS
+            const pickups = await api.entities.PickupOrder.filter({
+                driver: selectedShift.driver_name,
+                date_called_out: selectedDateStr
+            });
+
+            const dispatchArr = Array.isArray(dispatch) ? dispatch : dispatch?.data || [];
+            const pickupArr = Array.isArray(pickups) ? pickups : pickups?.data || [];
+
+            // 🔥 NORMALIZE (MATCH YOUR REAL COLUMNS)
+            const normalizedDispatch = dispatchArr.map(d => ({
+                id: `d-${d.id}`,
+                type: "delivery",
+
+                customer: d.customer || d.company || "",
+                trailer_number: d.trailer_number || "",   // ✅ CORRECT
+                notes: d.notes || "",
+
+                date: d.date,
+                raw: d
+            }));
+
+            const normalizedPickup = pickupArr.map(p => ({
+                id: `p-${p.id}`,
+                type: "pickup",
+
+                customer: p.company || p.customer || "",
+                trailer_number: p.dk_trl || "",   // ✅ CORRECT (IMPORTANT FIX)
+                notes: p.notes || "",
+
+                date: p.date_called_out,
+                raw: p
+            }));
+
+            return [...normalizedDispatch, ...normalizedPickup];
         },
-
         enabled: !!selectedShift
     });
 
@@ -181,7 +217,7 @@ export default function DriverLog() {
 
             // 🔥 DELETE RUNS
             for (const run of runsArray) {
-                await api.entities.Run.delete(run.id);
+                //await api.entities.Run.delete(run.id);
             }
 
             // 🔥 DELETE SHIFT
@@ -208,21 +244,21 @@ export default function DriverLog() {
         }
     });
 
-    const addRunMutation = useMutation({
-        mutationFn: (data) => api.entities.Run.create(data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['runs'] });
-            setShowAddRun(false);
-        }
-    });
+    // const addRunMutation = useMutation({
+    //    mutationFn: (data) => api.entities.Run.create(data),
+    //    onSuccess: () => {
+    //        queryClient.invalidateQueries({ queryKey: ['runs'] });
+    //        setShowAddRun(false);
+    //    }
+    // });
 
-    const updateRunMutation = useMutation({
-        mutationFn: ({ id, data }) => api.entities.Run.update(id, data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['runs'] });
-            setEditingRun(null);
-        }
-    });
+    // const updateRunMutation = useMutation({
+    //    mutationFn: ({ id, data }) => api.entities.Run.update(id, data),
+    //    onSuccess: () => {
+    //        queryClient.invalidateQueries({ queryKey: ['runs'] });
+    //        setEditingRun(null);
+    //    }
+    // });
 
     const endShiftMutation = useMutation({
         mutationFn: (data) => api.entities.Shift.update(activeShift.id, data),
@@ -379,7 +415,7 @@ export default function DriverLog() {
                                                                                 : shiftRuns?.data || [];
 
                                                                             for (const run of runsArray) {
-                                                                                await api.entities.Run.delete(run.id);
+                                                                                // await api.entities.Run.delete(run.id);
                                                                             }
 
                                                                             // 🔥 DELETE SHIFT
@@ -440,8 +476,8 @@ export default function DriverLog() {
                                     <div className="flex items-center justify-between">
                                         <h2 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
                                             <Route className="h-5 w-5 text-amber-700" />
-                                            Runs
-                                            <span className="text-sm font-normal text-zinc-500">({runs.length})</span>
+                                            Orders
+                                            <span className="text-sm font-normal text-zinc-500">({driverOrders.length})</span>
                                         </h2>
                                         {!showAddRun && (
                                             <Button onClick={() => setShowAddRun(true)}
@@ -457,8 +493,11 @@ export default function DriverLog() {
                                                 <AddRunForm
                                                     shiftId={selectedShift.id}
                                                     driverName={selectedShift.driver_name}
-                                                    onSubmit={(data) => addRunMutation.mutate(data)}
-                                                    isLoading={addRunMutation.isPending}
+                                                    //onSubmit={(data) => addRunMutation.mutate(data)}
+                                                    onSubmit={(data) => {
+                                                        console.log("TEMP RUN SUBMIT:", data);
+                                                    }}
+                                                    isLoading={false}
                                                     onCancel={() => setShowAddRun(false)}
                                                 />
                                             </motion.div>
@@ -469,19 +508,24 @@ export default function DriverLog() {
                                         <div className="flex justify-center py-8">
                                             <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
                                         </div>
-                                    ) : runs.length === 0 ? (
+                                    ) : driverOrders.length === 0 ? (
                                         <div className="text-center py-12 px-6 bg-white rounded-2xl border border-dashed border-amber-200/70">
                                             <Route className="h-10 w-10 text-zinc-400 mx-auto mb-3" />
-                                            <p className="text-zinc-600 font-medium">No runs logged yet</p>
-                                            <p className="text-zinc-500 text-sm mt-1">Add your first run to get started</p>
+                                            <p className="text-zinc-600 font-medium">No orders assigned yet</p>
+                                            <p className="text-zinc-500 text-sm mt-1">Assign orders from Dispatch or Pick Ups</p>
                                         </div>
                                     ) : (
                                         <div className="space-y-3">
-                                            {runs.map((run, index) => (
+                                            {driverOrders.map((run, index) => (
                                                 <motion.div key={run.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.05 }}>
-                                                    <RunCard 
-                                                        run={run} 
-                                                        index={index} 
+                                                    <RunCard
+                                                        run={{
+                                                            ...run,
+                                                            run_type: run.type, // 🔥 THIS IS THE FIX
+                                                            trailer_dropped: run.trailer_number,
+                                                            customer_name: run.customer
+                                                        }}
+                                                        index={index}
                                                         isCurrentRun={index === 0}
                                                         onClick={() => setEditingRun(run)}
                                                     />
@@ -503,8 +547,11 @@ export default function DriverLog() {
                     run={editingRun}
                     open={!!editingRun}
                     onClose={() => setEditingRun(null)}
-                    onSave={(data) => updateRunMutation.mutate({ id: editingRun.id, data })}
-                    isSaving={updateRunMutation.isPending}
+                    // onSave={(data) => updateRunMutation.mutate({ id: editingRun.id, data })}
+                    onSave={(data) => {
+                        console.log("TEMP EDIT RUN:", data);
+                    }}
+                    isSaving={false}
                 />
             )}
         </div>
