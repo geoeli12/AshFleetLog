@@ -181,7 +181,7 @@ export default function DriverLog() {
             // return new Date(b.date) - new Date(a.date);
             // return filteredOrders;
             return filteredOrders.sort((a, b) => {
-                return String(a.date).localeCompare(String(b.date));
+                return String(b.date).localeCompare(String(a.date));
             });
         },
         // enabled: !!selectedDriver
