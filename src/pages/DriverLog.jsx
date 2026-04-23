@@ -181,7 +181,7 @@ export default function DriverLog() {
             // return new Date(b.date) - new Date(a.date);
             // return filteredOrders;
             return filteredOrders.sort((a, b) => {
-                return new Date(b.date) - new Date(a.date);
+                return String(a.date).localeCompare(String(b.date));
             });
         },
         // enabled: !!selectedDriver
@@ -297,6 +297,46 @@ export default function DriverLog() {
     //        setEditingRun(null);
     //    }
     // });
+
+    const updateOrderMutation = useMutation({
+        mutationFn: async ({ run, data }) => {
+
+            if (run.__type === "delivery") {
+                return api.entities.DispatchOrder.update(run.raw.id, {
+                    customer: data.customer_name,
+                    city: data.city,
+                    trailer_number: data.trailer_dropped,
+                    trailer_picked_up: data.trailer_picked_up,
+                    load_type: data.load_type,
+                    arrival_time: data.arrival_time,
+                    departure_time: data.departure_time,
+
+                    eta: data.arrival_time
+                        ? new Date(data.arrival_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        : null,
+
+                    notes: data.notes
+                });
+            } else {
+                return api.entities.PickupOrder.update(run.raw.id, {
+                    company: data.customer_name,
+                    location: data.city,
+                    dk_trl: data.trailer_picked_up,
+                    trailer_dropped: data.trailer_dropped,
+                    type: data.load_type,
+                    arrival_time: data.arrival_time,
+                    departure_time: data.departure_time,
+                    notes: data.notes
+                });
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ['driverOrders', selectedDriver, selectedDate]
+            });
+            setEditingRun(null);
+        }
+    });
 
     const endShiftMutation = useMutation({
         mutationFn: (data) => api.entities.Shift.update(activeShift.id, data),
@@ -555,13 +595,17 @@ export default function DriverLog() {
                                                                     customer: data.customer_name,
                                                                     city: data.city,
 
-                                                                    // REQUIRED FIELD
                                                                     bol_number: `AUTO-${Date.now()}`,
 
                                                                     notes: data.notes,
 
-                                                                    // ✅ YOUR EXISTING COLUMN
                                                                     trailer_number: data.trailer_dropped,
+                                                                    trailer_picked_up: data.trailer_picked_up || null,
+
+                                                                    load_type: data.load_type || null,
+
+                                                                    arrival_time: data.arrival_time || null,
+                                                                    departure_time: data.departure_time || null,
 
                                                                     driver_name: data.driver_name,
 
@@ -578,13 +622,19 @@ export default function DriverLog() {
                                                                     company: data.customer_name,
                                                                     date_called_out: data.date || today,
 
-                                                                    // ✅ YOUR EXISTING COLUMN
                                                                     dk_trl: data.trailer_picked_up,
+                                                                    trailer_dropped: data.trailer_dropped || null,
 
                                                                     driver: data.driver_name,
                                                                     location: data.city,
+
                                                                     notes: data.notes,
-                                                                    type: data.load_type
+
+                                                                    type: data.load_type,
+                                                                    // load_type: data.load_type,
+
+                                                                    arrival_time: data.arrival_time || null,
+                                                                    departure_time: data.departure_time || null
                                                                 });
                                                             }
 
@@ -653,7 +703,7 @@ export default function DriverLog() {
                     onClose={() => setEditingRun(null)}
                     // onSave={(data) => updateRunMutation.mutate({ id: editingRun.id, data })}
                     onSave={(data) => {
-                        console.log("TEMP EDIT RUN:", data);
+                        updateOrderMutation.mutate({ run: editingRun, data });
                     }}
                     isSaving={false}
                 />
