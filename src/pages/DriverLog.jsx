@@ -125,7 +125,14 @@ export default function DriverLog() {
             const filteredOrders = [
 
                 ...dispatchArr
-                    .filter(d => String(d.date).startsWith(selectedDateStr))
+
+                    // .filter(d => String(d.date).startsWith(selectedDateStr))
+
+                    .filter(d => {
+                        const dDate = new Date(d.date);
+                        return format(dDate, 'yyyy-MM-dd') === selectedDateStr;
+                    })
+
                     .map(d => ({
                         id: `d-${d.id}`,
                         __type: "delivery",
@@ -142,7 +149,13 @@ export default function DriverLog() {
                     })),
 
                 ...pickupArr
-                    .filter(p => String(p.date_called_out).startsWith(selectedDateStr))
+                    // .filter(p => String(p.date_called_out).startsWith(selectedDateStr))
+
+                    .filter(p => {
+                        const pDate = new Date(p.date_called_out);
+                        return format(pDate, 'yyyy-MM-dd') === selectedDateStr;
+                    })
+
                     .map(p => ({
                         id: `p-${p.id}`,
                         __type: "pickup",
@@ -160,13 +173,15 @@ export default function DriverLog() {
                     }))
             ];
 
-            return new Date(b.date) - new Date(a.date);
+            // return new Date(b.date) - new Date(a.date);
             // return filteredOrders;
-            // return filteredOrders.sort((a, b) => {
-            //     return new Date(a.date) - new Date(b.date);
-            // });
+            return filteredOrders.sort((a, b) => {
+                return new Date(b.date) - new Date(a.date);
+            });
         },
-        enabled: !!selectedDriver
+        // enabled: !!selectedDriver
+        enabled: !!selectedShift
+
     });
 
     const startShiftMutation = useMutation({
