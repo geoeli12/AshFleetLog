@@ -126,12 +126,14 @@ export default function DriverLog() {
 
                 ...dispatchArr
 
+                    .filter(d => String(d.date).slice(0, 10) === selectedDateStr)
+
                     // .filter(d => String(d.date).startsWith(selectedDateStr))
 
-                    .filter(d => {
-                        const dDate = new Date(d.date);
-                        return format(dDate, 'yyyy-MM-dd') === selectedDateStr;
-                    })
+                    // .filter(d => {
+                    //     const dDate = new Date(d.date);
+                    //     return format(dDate, 'yyyy-MM-dd') === selectedDateStr;
+                    // })
 
                     .map(d => ({
                         id: `d-${d.id}`,
@@ -149,12 +151,15 @@ export default function DriverLog() {
                     })),
 
                 ...pickupArr
+
+                    .filter(p => String(p.date_called_out).slice(0, 10) === selectedDateStr)
+
                     // .filter(p => String(p.date_called_out).startsWith(selectedDateStr))
 
-                    .filter(p => {
-                        const pDate = new Date(p.date_called_out);
-                        return format(pDate, 'yyyy-MM-dd') === selectedDateStr;
-                    })
+                    // .filter(p => {
+                    //     const pDate = new Date(p.date_called_out);
+                    //     return format(pDate, 'yyyy-MM-dd') === selectedDateStr;
+                    // })
 
                     .map(p => ({
                         id: `p-${p.id}`,
@@ -337,7 +342,13 @@ export default function DriverLog() {
                         <input
                             type="date"
                             value={format(selectedDate, "yyyy-MM-dd")}
-                            onChange={(e) => setSelectedDate(new Date(e.target.value))}
+
+                            // onChange={(e) => setSelectedDate(new Date(e.target.value))}
+
+                            onChange={(e) => {
+                                const [year, month, day] = e.target.value.split('-').map(Number);
+                                setSelectedDate(new Date(year, month - 1, day));
+                            }}
                             className="border rounded-lg px-3 py-1 text-sm"
                         />
 
