@@ -180,8 +180,10 @@ export default function DriverLog() {
 
             // return new Date(b.date) - new Date(a.date);
             // return filteredOrders;
+
             return filteredOrders.sort((a, b) => {
-                return String(b.date).localeCompare(String(a.date));
+                return new Date(b.raw.created_at || b.raw.created_date || 0) - 
+                       new Date(a.raw.created_at || a.raw.created_date || 0);
             });
         },
         // enabled: !!selectedDriver
