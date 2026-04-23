@@ -101,7 +101,7 @@ export default function DriverLog() {
         ? allActiveShifts.find(shift => shift.driver_name === selectedDriver)
         : null;
 
-    const { data: driverOrders = [], isLoading: runsLoading } = useQuery({
+    const { data: driverOrders = [], isLoading: ordersLoading } = useQuery({
         queryKey: ['driverOrders', selectedDriver, selectedDate],
         queryFn: async () => {
 
@@ -111,7 +111,7 @@ export default function DriverLog() {
 
             // 🔵 GET DATA
             const dispatch = await api.entities.DispatchOrder.filter({
-                delivered_by: selectedShift.driver_name
+                driver_name: selectedShift.driver_name
             });
 
             const pickups = await api.entities.PickupOrder.filter({
@@ -160,7 +160,11 @@ export default function DriverLog() {
                     }))
             ];
 
-            return filteredOrders;
+            return new Date(b.date) - new Date(a.date);
+            // return filteredOrders;
+            // return filteredOrders.sort((a, b) => {
+            //     return new Date(a.date) - new Date(b.date);
+            // });
         },
         enabled: !!selectedDriver
     });
@@ -225,17 +229,14 @@ export default function DriverLog() {
     const cancelShiftMutation = useMutation({
         mutationFn: async (shiftId) => {
 
-            // 🔥 GET RUNS FOR THIS SHIFT (safe way, not relying on local state)
-            const shiftRuns = await api.entities.Run.filter({ shift_id: shiftId });
-
-            const runsArray = Array.isArray(shiftRuns)
-                ? shiftRuns
-                : shiftRuns?.data || [];
+            //const runsArray = Array.isArray(shiftRuns)
+                //? shiftRuns
+                //: shiftRuns?.data || [];
 
             // 🔥 DELETE RUNS
-            for (const run of runsArray) {
+            //for (const run of runsArray) {
                 //await api.entities.Run.delete(run.id);
-            }
+            //}
 
             // 🔥 DELETE SHIFT
             await api.entities.Shift.delete(shiftId);
@@ -253,7 +254,7 @@ export default function DriverLog() {
 
             // 🔄 REFRESH EVERYTHING
             await queryClient.invalidateQueries({ queryKey: ['activeShifts'] });
-            await queryClient.invalidateQueries({ queryKey: ['runs'] });
+            // await queryClient.invalidateQueries({ queryKey: ['runs'] });
 
             await queryClient.invalidateQueries({
                 queryKey: ['shiftsByDate', format(selectedDate, 'yyyy-MM-dd')]
@@ -281,7 +282,7 @@ export default function DriverLog() {
         mutationFn: (data) => api.entities.Shift.update(activeShift.id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['activeShifts'] });
-            queryClient.invalidateQueries({ queryKey: ['runs'] });
+            //queryClient.invalidateQueries({ queryKey: ['runs'] });
         }
     });
 
@@ -416,7 +417,9 @@ export default function DriverLog() {
                                                                 <AlertDialogHeader>
                                                                     <AlertDialogTitle>Cancel Shift</AlertDialogTitle>
                                                                     <AlertDialogDescription>
-                                                                        Are you sure you want to cancel {shift.driver_name}'s shift? All runs will be deleted.
+                                                                        Are you sure you want to cancel {shift.driver_name}'s shift? This will remove the shift.
+
+
                                                                     </AlertDialogDescription>
                                                                 </AlertDialogHeader>
                                                                 <AlertDialogFooter>
@@ -425,15 +428,15 @@ export default function DriverLog() {
                                                                         onClick={async () => {
 
                                                                             // 🔥 DELETE RUNS FIRST
-                                                                            const shiftRuns = await api.entities.Run.filter({ shift_id: shift.id });
+                                                                            // const shiftRuns = await api.entities.Run.filter({ shift_id: shift.id });
 
-                                                                            const runsArray = Array.isArray(shiftRuns)
-                                                                                ? shiftRuns
-                                                                                : shiftRuns?.data || [];
+                                                                            // const runsArray = Array.isArray(shiftRuns)
+                                                                            //    ? shiftRuns
+                                                                            //    : shiftRuns?.data || [];
 
-                                                                            for (const run of runsArray) {
+                                                                            // for (const run of runsArray) {
                                                                                 // await api.entities.Run.delete(run.id);
-                                                                            }
+                                                                            // }
 
                                                                             // 🔥 DELETE SHIFT
                                                                             await api.entities.Shift.delete(shift.id);
@@ -445,7 +448,7 @@ export default function DriverLog() {
 
                                                                             // 🔄 FORCE REFRESH ALL RELATED DATA
                                                                             await queryClient.invalidateQueries({ queryKey: ['activeShifts'] });
-                                                                            await queryClient.invalidateQueries({ queryKey: ['runs'] });
+                                                                            // await queryClient.invalidateQueries({ queryKey: ['runs'] });
 
                                                                             await queryClient.invalidateQueries({
                                                                                 queryKey: ['shiftsByDate', format(selectedDate, 'yyyy-MM-dd')]
@@ -511,9 +514,67 @@ export default function DriverLog() {
                                                     shiftId={selectedShift.id}
                                                     driverName={selectedShift.driver_name}
                                                     //onSubmit={(data) => addRunMutation.mutate(data)}
-                                                    onSubmit={(data) => {
-                                                        console.log("TEMP RUN SUBMIT:", data);
+                                                    onSubmit={async (data) => {
+                                                        try {
+
+                                                            const today = new Date().toISOString().split('T')[0];
+
+                                                            // 🚛 DELIVERY → dispatch_orders
+                                                            if (data.run_type === "delivery") {
+
+                                                                //const today = new Date().toISOString().split('T')[0];
+
+                                                                await api.entities.DispatchOrder.create({
+                                                                    date: data.date || today,
+                                                                    customer: data.customer_name,
+                                                                    city: data.city,
+
+                                                                    // REQUIRED FIELD
+                                                                    bol_number: `AUTO-${Date.now()}`,
+
+                                                                    notes: data.notes,
+
+                                                                    // ✅ YOUR EXISTING COLUMN
+                                                                    trailer_number: data.trailer_dropped,
+
+                                                                    driver_name: data.driver_name,
+
+                                                                    eta: data.arrival_time
+                                                                        ? new Date(data.arrival_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                                                        : null
+                                                                });
+                                                            } else {
+
+                                                                // 📦 PICKUP → pickup_orders
+                                                                //const today = new Date().toISOString().split('T')[0];
+
+                                                                await api.entities.PickupOrder.create({
+                                                                    company: data.customer_name,
+                                                                    date_called_out: data.date || today,
+
+                                                                    // ✅ YOUR EXISTING COLUMN
+                                                                    dk_trl: data.trailer_picked_up,
+
+                                                                    driver: data.driver_name,
+                                                                    location: data.city,
+                                                                    notes: data.notes,
+                                                                    type: data.load_type
+                                                                });
+                                                            }
+
+                                                            // 🔄 REFRESH UI (IMPORTANT)
+                                                            await queryClient.invalidateQueries({
+                                                                queryKey: ['driverOrders', selectedDriver, selectedDate]
+                                                            });
+
+                                                            // ✅ CLOSE FORM
+                                                            setShowAddRun(false);
+
+                                                        } catch (err) {
+                                                            console.error("Error saving order:", err);
+                                                        }
                                                     }}
+
                                                     isLoading={false}
                                                     onCancel={() => setShowAddRun(false)}
                                                 />
@@ -521,7 +582,7 @@ export default function DriverLog() {
                                         )}
                                     </AnimatePresence>
 
-                                    {runsLoading ? (
+                                    {ordersLoading ? (
                                         <div className="flex justify-center py-8">
                                             <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
                                         </div>
