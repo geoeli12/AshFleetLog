@@ -85,6 +85,7 @@ const COLLECTIONS = {
       "notes",
       "dock_hours",
       "eta",
+      "load_type",   // ✅ ADD THIS
       "trailer_number",
       "driver_name",
       "source_file_name",
@@ -147,6 +148,8 @@ const COLLECTIONS = {
       "location",
       "driver",
       "shift_code",
+      "type",        // ✅ ADD THIS
+      "load_type",   // ✅ ADD THIS
       "notes",
       "created_at",
     ],
