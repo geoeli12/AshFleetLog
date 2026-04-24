@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useState } from 'react';
 import { api } from '@/api/apiClient';
 import { useQuery } from '@tanstack/react-query';
@@ -13,17 +12,60 @@ import { MapPin, Building2, Package, Clock, ArrowRightLeft, TruckIcon, PackageCh
 const DEFAULT_LOAD_TYPES = ['scrap', 'occ', 'mix', 'empty'];
 
 export default function EditRunDialog({ run, open, onClose, onSave, isSaving }) {
-    const buildInitialData = (r) => ({
-        run_type: r?.run_type || 'delivery',
-        customer_name: r?.customer_name || '',
-        city: r?.city || '',
-        trailer_dropped: r?.trailer_dropped || '',
-        trailer_picked_up: r?.trailer_picked_up || '',
-        load_type: r?.load_type || '',
-        arrival_time: r?.arrival_time ? new Date(r.arrival_time).toISOString().slice(0, 16) : '',
-        departure_time: r?.departure_time ? new Date(r.departure_time).toISOString().slice(0, 16) : '',
-        notes: r?.notes || ''
-    });
+    const buildInitialData = (r) => {
+
+        const raw = r?.raw || r || {};
+
+        return {
+            run_type:
+                r?.run_type ||
+                (raw?.customer || raw?.trailer_number ? 'delivery' : 'pickup'),
+
+            // 🔥 FIX: support BOTH run + raw DB fields
+            customer_name:
+                r?.customer_name ||
+                raw?.customer ||
+                raw?.company ||
+                '',
+
+            city:
+                r?.city ||
+                raw?.city ||
+                raw?.location ||
+                '',
+
+            trailer_dropped:
+                r?.trailer_dropped ||
+                raw?.trailer_number ||
+                '',
+
+            trailer_picked_up:
+                r?.trailer_picked_up ||
+                raw?.dk_trl ||
+                '',
+
+            load_type:
+                r?.load_type ||
+                raw?.load_type ||
+                (r?.run_type === 'pickup' ? raw?.type : '') ||
+                '',
+
+            arrival_time:
+                (r?.arrival_time || raw?.arrival_time)
+                    ? new Date(r?.arrival_time || raw?.arrival_time).toISOString().slice(0, 16)
+                    : '',
+
+            departure_time:
+                (r?.departure_time || raw?.departure_time)
+                    ? new Date(r?.departure_time || raw?.departure_time).toISOString().slice(0, 16)
+                    : '',
+
+            notes:
+                r?.notes ||
+                raw?.notes ||
+                ''
+        };
+    };
 
     const [data, setData] = useState(() => buildInitialData(run));
 
@@ -157,4 +199,3 @@ export default function EditRunDialog({ run, open, onClose, onSave, isSaving }) 
         </Dialog>
     );
 }
-
