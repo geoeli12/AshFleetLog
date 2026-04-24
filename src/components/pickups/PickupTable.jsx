@@ -248,14 +248,36 @@ export default function PickupTable({
                               <div key={col.key} className={col.width}>
                                 {isEditing ? (
                                   <Input
-                                    value={editData[col.key] || ""}
-                                    onChange={(e) => handleChange(col.key, e.target.value)}
+                                    value={
+                                      col.key === "eta"
+                                        ? editData.eta || ""
+                                        : col.key === "shift_code"
+                                        ? editData.shift_code || editData.type || editData.load_type || ""
+                                        : editData[col.key] || ""
+                                    }
+                                    onChange={(e) => {
+                                      if (col.key === "eta") {
+                                        handleChange("eta", e.target.value);
+                                      } else if (col.key === "shift_code") {
+                                        handleChange("type", e.target.value); // 🔥 map to DB field
+                                      } else {
+                                        handleChange(col.key, e.target.value);
+                                      }
+                                    }}
                                     onKeyDown={handleKeyNav}
                                     onClick={(e) => e.stopPropagation()}
                                     className="h-8"
                                   />
                                 ) : (
-                                  <div className="truncate">{log[col.key] || "-"}</div>
+                                  <div className="truncate">
+                                    {
+                                      col.key === "eta"
+                                        ? log.eta || "-"
+                                        : col.key === "shift_code"
+                                        ? log.shift_code || log.type || log.load_type || "-"
+                                        : log[col.key] || "-"
+                                    }
+                                  </div>
                                 )}
                               </div>
                             );
