@@ -12,7 +12,13 @@ async function req(path, options = {}) {
   );
 
   const text = await res.text();
-  const data = text ? JSON.parse(text) : null;
+  let data = null;
+
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = text; // fallback (prevents crash)
+  }
 
   if (!res.ok) {
     const err = new Error((data && data.error) ? data.error : res.statusText);
@@ -26,6 +32,9 @@ async function req(path, options = {}) {
 function makeEntity(resource) {
   return {
     list: (sort) => req(`/api/${resource}${sort ? `?sort=${encodeURIComponent(sort)}` : ""}`),
+
+    get: (id) => req(`/api/${resource}/${encodeURIComponent(id)}`), // 🔥 ADD THIS
+
     filter: (where = {}, sort) => {
       const qs = new URLSearchParams();
       for (const [k, v] of Object.entries(where || {})) {
@@ -36,9 +45,19 @@ function makeEntity(resource) {
       const s = qs.toString();
       return req(`/api/${resource}${s ? `?${s}` : ""}`);
     },
+
     create: (data) => req(`/api/${resource}`, { method: "POST", body: JSON.stringify(data || {}) }),
-    update: (id, data) => req(`/api/${resource}/${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify(data || {}) }),
-    delete: (id) => req(`/api/${resource}/${encodeURIComponent(id)}`, { method: "DELETE" }),
+
+    update: (id, data) =>
+      req(`/api/${resource}/${encodeURIComponent(id)}`, {
+        method: "PUT",
+        body: JSON.stringify(data || {})
+      }),
+
+    delete: (id) =>
+      req(`/api/${resource}/${encodeURIComponent(id)}`, {
+        method: "DELETE"
+      }),
   };
 }
 
