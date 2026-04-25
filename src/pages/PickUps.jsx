@@ -253,8 +253,12 @@ export default function PickUps() {
       const previousDriver = String(nextData?._previousDriver || "").trim();
       // const orderDate = toYMD(nextData?.date_called_out);
 
-      const orderFromDb = await api.entities.PickupOrder.get(id);
-      const fullOrder = orderFromDb?.data || orderFromDb;
+      // const orderFromDb = await api.entities.PickupOrder.get(id);
+      // const fullOrder = orderFromDb?.data || orderFromDb;
+
+      const fullOrder = {
+        ...nextData
+      };
 
       const orderDate =
         toYMD(nextData?.date_called_out) ||
@@ -290,15 +294,24 @@ export default function PickUps() {
             ? existingRuns
             : existingRuns?.data || [];
 
-          const orderFromDb = await api.entities.PickupOrder.get(id);
-          const fullOrder = orderFromDb?.data || orderFromDb;
+          // const orderFromDb = await api.entities.PickupOrder.get(id);
+          // const fullOrder = orderFromDb?.data || orderFromDb;
+
+          const fullOrder = {
+            ...nextData
+          };
 
           // 🎯 MATCH EXACT RUN
+          //const matchingRuns = runsArray.filter(r =>
+          //  String(r.trailer_dropped || "") === String(fullOrder.dk_trl || "") &&
+          //  String(r.customer_name || "") === String(fullOrder.company || "") &&
+          //  String(r.run_date || "") === String(orderDate || "") &&
+          //  String(r.driver_name || "") === String(previousDriver || "")
+          //);
+
           const matchingRuns = runsArray.filter(r =>
-            String(r.trailer_dropped || "") === String(fullOrder.dk_trl || "") &&
-            String(r.customer_name || "") === String(fullOrder.company || "") &&
-            String(r.run_date || "") === String(orderDate || "") &&
-            String(r.driver_name || "") === String(previousDriver || "")
+            r.dispatch_id && id &&
+            String(r.dispatch_id) === String(id)
           );
 
           // ❌ DELETE MATCHING RUNS
@@ -374,15 +387,24 @@ export default function PickUps() {
           : existingRuns?.data || [];
 
         // 🔥 GET FULL ORDER
-        const orderFromDb = await api.entities.PickupOrder.get(id);
-        const fullOrder = orderFromDb?.data || orderFromDb;
+        // const orderFromDb = await api.entities.PickupOrder.get(id);
+        // const fullOrder = orderFromDb?.data || orderFromDb;
+
+        const fullOrder = {
+          ...nextData
+        };
 
         // 🔥 MATCH EXISTING RUN
+        //const existingRun = runsArray.find(r =>
+        //  String(r.trailer_dropped || "") === String(fullOrder.dk_trl || "") &&
+        //  String(r.customer_name || "") === String(fullOrder.company || "") &&
+        //  String(r.run_date || "") === String(orderDate || "") &&
+        //  String(r.driver_name || "") === String(driverName || "")
+        //);
+
         const existingRun = runsArray.find(r =>
-          String(r.trailer_dropped || "") === String(fullOrder.dk_trl || "") &&
-          String(r.customer_name || "") === String(fullOrder.company || "") &&
-          String(r.run_date || "") === String(orderDate || "") &&
-          String(r.driver_name || "") === String(driverName || "")
+          r.dispatch_id && id &&
+          String(r.dispatch_id) === String(id)
         );
 
         if (existingRun) return;
