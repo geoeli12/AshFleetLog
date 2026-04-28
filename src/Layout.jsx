@@ -19,11 +19,11 @@ export default function Layout({ children, currentPageName }) {
   const isDashboard = pageName === "Dashboard";
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-screen flex flex-col overflow-hidden">
 
       {/* HEADER (UNCHANGED — FULL WIDTH 👍) */}
-      <header className="bg-neutral-900 text-white shadow-lg">
-        <div className="w-full px-6 py-4 flex items-center justify-between">
+      <header className="h-[72px] bg-neutral-900 text-white shadow-lg">
+        <div className="w-full h-full px-6 flex items-center justify-between">
           
           <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3 min-w-0">
             <img src="/ash_pallet_logo.svg" alt="ASH Pallet" className="h-10 w-auto shrink-0" />
