@@ -545,22 +545,28 @@ export default function CustomersPA() {
     setEditOpen(true);
   };
 
+  const cleanStr = (v) => {
+    if (v === undefined || v === null) return null;
+    const s = String(v).trim();
+    return s === "" ? null : s;
+  };
+
   const saveRow = (draft) => {
     const cleaned = {
-      customer: displayCustomerName(draft?.customer),
-      address: String(draft?.address ?? "").trim(),
-      receiving_hours: String(draft?.receivingHours ?? "").trim(),
-      receiving_notes: String(draft?.receivingNotes ?? "").trim(),
-      weekend_hours: String(draft?.weekendHours ?? "").trim(),
-      distance: String(draft?.distance ?? "").trim(),
-      contact: String(draft?.contact ?? "").trim(),
-      contact_phone: String(draft?.contactPhone ?? "").trim(),
-      contact_email: String(draft?.contactEmail ?? "").trim(),
-      notes: String(draft?.notes ?? "").trim(),
-      drop_trailers: String(draft?.dropTrailers ?? "").trim(),
-      coordinates: String(draft?.coordinates ?? "").trim(),
-      dis: String(draft?.dis ?? "").trim(),
-      eta: String(draft?.eta ?? "").trim(),
+      customer: cleanStr(draft?.customer),
+      address: cleanStr(draft?.address),
+      receiving_hours: cleanStr(draft?.receivingHours),
+      receiving_notes: cleanStr(draft?.receivingNotes),
+      weekend_hours: cleanStr(draft?.weekendHours),
+      distance: cleanStr(draft?.distance),
+      contact: cleanStr(draft?.contact),
+      contact_phone: cleanStr(draft?.contactPhone),
+      contact_email: cleanStr(draft?.contactEmail),
+      notes: cleanStr(draft?.notes),
+      drop_trailers: cleanStr(draft?.dropTrailers),
+      coordinates: cleanStr(draft?.coordinates),
+      dis: cleanStr(draft?.dis),
+      eta: cleanStr(draft?.eta),
     };
 
     if (!cleaned.customer) return;
