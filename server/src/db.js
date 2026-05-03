@@ -564,6 +564,11 @@ export async function updateRecord(collectionKey, id, payload) {
 
   const updatePayload = normalizePayload(collectionKey, payload);
 
+  // 🚨 CRITICAL FIX
+  if (!updatePayload || Object.keys(updatePayload).length === 0) {
+    throw new Error("Update failed: payload is empty after normalization.");
+  }
+
   const { data, error } = await supabase
     .from(c.table)
     .update(updatePayload)
