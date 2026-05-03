@@ -338,8 +338,14 @@ export default function DailyOrders() {
 
     queryFn: async () => {
       try {
-        const res = await api.entities.DailyOrder.filter({ date: ymd, region: activeRegion }, "created_at");
-        return unwrapListResult(res);
+        const res = await api.entities.DailyOrder.filter({ date: ymd }, "created_at");
+
+        const list = unwrapListResult(res);
+
+        return list.filter(o =>
+          String(o.region || "").trim().toUpperCase() === (activeRegion || "IL")
+        );
+
       } catch {
         return [];
       }
@@ -607,7 +613,7 @@ export default function DailyOrders() {
     // DailyOrder table column stays as "customer" in Supabase
     const payload = {
       date: safeYmd(form.date) || ymd,
-      region: (form.region || activeRegion || "IL").toUpperCase(),
+      region: activeRegion.toString().trim().toUpperCase(),
 
       customer: String(form.company ?? "").trim() || null,
       ht: String(form.ht ?? "").trim() || null,
