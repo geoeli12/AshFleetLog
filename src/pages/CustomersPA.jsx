@@ -176,7 +176,7 @@ function CustomerEditorDialog({ open, onOpenChange, title, initial, onSave, isSa
 
           <div className="space-y-2">
             <Label>Drop Trailers</Label>
-            <Input value={form.dropTrailers || ""} onChange={set("dropTrailers")} className="rounded-xl" />
+            <Input value={form.dropTrailers || ""} onChange={set("dropTrailers")} className="rounded-xl w-32" />
           </div>
         </div>
 
