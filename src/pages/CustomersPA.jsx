@@ -129,10 +129,10 @@ function CustomerEditorDialog({ open, onOpenChange, title, initial, onSave, isSa
             <Input value={form.coordinates || ""} onChange={set("coordinates")} className="rounded-xl" placeholder="lat, lng" />
           </div>
 
-          //<div className="space-y-2">
-          //  <Label>Dis</Label>
-          //  <Input value={form.dis || ""} onChange={set("dis")} className="rounded-xl" placeholder="e.g., 18 mi" />
-          //</div>
+          <div className="space-y-2">
+            <Label>Distance</Label>
+            <Input value={form.distance || ""} onChange={set("distance")} className="rounded-xl" placeholder="e.g., 18 mi" />
+          </div>
 
           <div className="space-y-2">
             <Label>ETA</Label>
@@ -172,11 +172,6 @@ function CustomerEditorDialog({ open, onOpenChange, title, initial, onSave, isSa
           <div className="space-y-2 sm:col-span-2">
             <Label>Notes</Label>
             <Textarea value={form.notes || ""} onChange={set("notes")} className="min-h-[70px] rounded-xl" />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Distance</Label>
-            <Input value={form.distance || ""} onChange={set("distance")} className="rounded-xl" />
           </div>
 
           <div className="space-y-2">
