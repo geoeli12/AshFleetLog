@@ -613,7 +613,7 @@ export default function DailyOrders() {
     // DailyOrder table column stays as "customer" in Supabase
     const payload = {
       date: safeYmd(form.date) || ymd,
-      region: (form.region || activeRegion || "IL").toString().trim().toUpperCase(),
+      region: activeRegion.toString().trim().toUpperCase(),
 
       customer: String(form.company ?? "").trim() || null,
       ht: String(form.ht ?? "").trim() || null,
@@ -628,7 +628,7 @@ export default function DailyOrders() {
   };
 
   const buildDispatchOrderPayload = () => {
-    const region = (form.region || activeRegion || "IL").toString().trim().toUpperCase();
+    const region = activeRegion.toString().trim().toUpperCase();
     const company = String(form.company ?? "").trim() || null;
 
     // Best compatibility: send BOTH keys. This prevents Supabase rejecting inserts
