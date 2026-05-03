@@ -548,7 +548,7 @@ export default function CustomersPA() {
 
   const saveRow = (draft) => {
     const cleaned = {
-      customer: displayCustomerName(draft?.customer),
+      customer: cleanStr(draft?.customer),
       address: cleanStr(draft?.address),
       receiving_hours: cleanStr(draft?.receivingHours),
       receiving_notes: cleanStr(draft?.receivingNotes),
