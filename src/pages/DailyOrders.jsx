@@ -333,10 +333,12 @@ export default function DailyOrders() {
     activeRegion === "PA" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700";
 
   const { data: rawOrders, isLoading } = useQuery({
-    queryKey: ["dailyOrders", ymd],
+
+    queryKey: ["dailyOrders", ymd, activeRegion]
+
     queryFn: async () => {
       try {
-        const res = await api.entities.DailyOrder.filter({ date: ymd }, "created_at");
+        const res = await api.entities.DailyOrder.filter({ date: ymd, region: activeRegion }, "created_at");
         return unwrapListResult(res);
       } catch {
         return [];
@@ -605,6 +607,8 @@ export default function DailyOrders() {
     // DailyOrder table column stays as "customer" in Supabase
     const payload = {
       date: safeYmd(form.date) || ymd,
+      region: (form.region || activeRegion || "IL").toUpperCase(),
+
       customer: String(form.company ?? "").trim() || null,
       ht: String(form.ht ?? "").trim() || null,
       bol_number: String(form.bol_number ?? "").trim() || null,
