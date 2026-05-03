@@ -4,7 +4,6 @@ import { createPageUrl } from "@/utils";
 import seedCustomers from "@/data/customers_pa.json";
 import { api } from "@/api/apiClient";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -130,10 +129,10 @@ function CustomerEditorDialog({ open, onOpenChange, title, initial, onSave, isSa
             <Input value={form.coordinates || ""} onChange={set("coordinates")} className="rounded-xl" placeholder="lat, lng" />
           </div>
 
-          <div className="space-y-2">
-            <Label>Dis</Label>
-            <Input value={form.dis || ""} onChange={set("dis")} className="rounded-xl" placeholder="e.g., 18 mi" />
-          </div>
+          //<div className="space-y-2">
+          //  <Label>Dis</Label>
+          //  <Input value={form.dis || ""} onChange={set("dis")} className="rounded-xl" placeholder="e.g., 18 mi" />
+          //</div>
 
           <div className="space-y-2">
             <Label>ETA</Label>
@@ -503,7 +502,6 @@ export default function CustomersPA() {
             r?.notes,
             r?.dropTrailers,
             r?.coordinates,
-            r?.dis,
             r?.eta,
             r?.weekendHours,
           ]
@@ -567,7 +565,6 @@ export default function CustomersPA() {
       notes: cleanStr(draft?.notes),
       drop_trailers: cleanStr(draft?.dropTrailers),
       coordinates: cleanStr(draft?.coordinates),
-      dis: cleanStr(draft?.dis),
       eta: cleanStr(draft?.eta),
     };
 
