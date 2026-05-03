@@ -100,7 +100,19 @@ function CustomerEditorDialog({ open, onOpenChange, title, initial, onSave, isSa
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <div className="flex items-start justify-between">
+            <DialogTitle>{title}</DialogTitle>
+
+            <div className="flex flex-col items-end space-y-1">
+              <Label className="text-xs text-muted-foreground">Drop Trailers</Label>
+              <Input
+                type="number"
+                value={form.dropTrailers || ""}
+                onChange={set("dropTrailers")}
+                className="rounded-xl w-20 text-center"
+              />
+            </div>
+          </div>
         </DialogHeader>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -172,11 +184,6 @@ function CustomerEditorDialog({ open, onOpenChange, title, initial, onSave, isSa
           <div className="space-y-2 sm:col-span-2">
             <Label>Notes</Label>
             <Textarea value={form.notes || ""} onChange={set("notes")} className="min-h-[70px] rounded-xl" />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Drop Trailers</Label>
-            <Input value={form.dropTrailers || ""} onChange={set("dropTrailers")} className="rounded-xl w-32" />
           </div>
         </div>
 
