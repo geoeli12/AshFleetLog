@@ -716,7 +716,7 @@ export default function DailyOrders() {
         }
       }
 
-      await qc.invalidateQueries({ queryKey: ["dailyOrders", ymd] });
+      await qc.invalidateQueries({ queryKey: ["dailyOrders"] });
       setDialogOpen(false);
       setActiveOrder(null);
     } catch (e) {
@@ -733,7 +733,7 @@ export default function DailyOrders() {
 
     try {
       await api.entities.DailyOrder.delete(order.id);
-      await qc.invalidateQueries({ queryKey: ["dailyOrders", ymd] });
+      await qc.invalidateQueries({ queryKey: ["dailyOrders"] });
       if (activeOrder?.id === order.id) {
         setDialogOpen(false);
         setActiveOrder(null);
