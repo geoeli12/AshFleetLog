@@ -343,7 +343,7 @@ export default function DailyOrders() {
         const list = unwrapListResult(res);
 
         return list.filter(o =>
-          String(o.region || "").trim().toUpperCase() === (activeRegion || "IL")
+          String(o.region || "IL").trim().toUpperCase() === (activeRegion || "IL")
         );
 
       } catch {
@@ -613,7 +613,7 @@ export default function DailyOrders() {
     // DailyOrder table column stays as "customer" in Supabase
     const payload = {
       date: safeYmd(form.date) || ymd,
-      region: activeRegion.toString().trim().toUpperCase(),
+      region: (form.region || activeRegion || "IL").toString().trim().toUpperCase(),
 
       customer: String(form.company ?? "").trim() || null,
       ht: String(form.ht ?? "").trim() || null,
