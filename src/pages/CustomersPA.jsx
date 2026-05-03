@@ -101,7 +101,20 @@ function CustomerEditorDialog({ open, onOpenChange, title, initial, onSave, isSa
       <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-start justify-between">
-            <DialogTitle>{title}</DialogTitle>
+
+            <div className="flex items-center gap-2">
+              <DialogTitle>{title}</DialogTitle>
+
+              {form?.id ? (
+                <Badge className="rounded-full bg-black text-amber-400 hover:bg-black">
+                  {displayIdNumber(form.id)}
+                </Badge>
+              ) : (
+                <Badge className="rounded-full bg-black text-amber-400 hover:bg-black">
+                  NEW
+                </Badge>
+              )}
+            </div>
 
             <div className="flex flex-col items-end space-y-1">
               <Label className="text-xs text-muted-foreground">Drop Trailers</Label>
@@ -512,9 +525,14 @@ export default function CustomersPA() {
           return hay.includes(qq);
         });
 
-    return filtered.slice().sort((a, b) =>
-      displayCustomerName(a?.customer).localeCompare(displayCustomerName(b?.customer), undefined, { sensitivity: "base" })
-    );
+    return filtered.slice().sort((a, b) => {
+      const getNum = (v) => {
+        const m = String(v ?? "").match(/(\d+)/);
+        return m ? parseInt(m[1], 10) : 0;
+      };
+
+      return getNum(a?.id) - getNum(b?.id); // ASCENDING
+    });
   }, [q, customers]);
 
   const openEdit = (row) => {
@@ -528,7 +546,7 @@ export default function CustomersPA() {
     setSaveError("");
     setEditMode("new");
     setActiveRow({
-      id: null,
+      id: getNextId(customers),
       customer: "",
       address: "",
       receivingHours: "",
