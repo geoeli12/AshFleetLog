@@ -584,7 +584,7 @@ export default function DailyOrders() {
   useEffect(() => {
     if (!dialogOpen) return;
     if (mode !== "add") return;
-    setForm((p) => ({ ...p, region: p.region || activeRegion || "IL" }));
+    setForm((p) => ({ ...p, region: activeRegion || "IL" }));
   }, [activeRegion, dialogOpen, mode]);
 
   useEffect(() => {
