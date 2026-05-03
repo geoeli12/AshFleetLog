@@ -118,6 +118,7 @@ const COLLECTIONS = {
     allowed: [
       "id",
       "date",
+      "region",   // ✅ ADD THIS LINE
       "customer",
       "ht",
       "pallet_1_6",
