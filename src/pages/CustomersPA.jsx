@@ -87,7 +87,9 @@ function CustomerEditorDialog({ open, onOpenChange, title, initial, onSave, isSa
   const [form, setForm] = useState(() => ({ ...initial }));
 
   useEffect(() => {
-    setForm({ ...initial });
+    if (open) {
+      setForm({ ...initial });
+    }
   }, [initial, open]);
 
   const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
@@ -553,7 +555,7 @@ export default function CustomersPA() {
 
   const saveRow = (draft) => {
     const cleaned = {
-      customer: cleanStr(draft?.customer),
+      customer: displayCustomerName(draft?.customer),
       address: cleanStr(draft?.address),
       receiving_hours: cleanStr(draft?.receivingHours),
       receiving_notes: cleanStr(draft?.receivingNotes),
@@ -582,10 +584,10 @@ export default function CustomersPA() {
       return;
     }
 
-    const id = Number(activeRow?.id);
-    if (id === undefined || id === null || isNaN(id)) return;
+    const id = activeRow?.id;
+    if (id === undefined || id === null) return;
 
-    updateMutation.mutate({ id, data: cleaned });
+    updateMutation.mutate({ id: String(id), data: cleaned });
   };
 
   const deleteRow = (row) => {
