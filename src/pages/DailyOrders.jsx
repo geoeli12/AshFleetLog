@@ -334,7 +334,7 @@ export default function DailyOrders() {
 
   const { data: rawOrders, isLoading } = useQuery({
 
-    queryKey: ["dailyOrders", ymd, activeRegion]
+    queryKey: ["dailyOrders", ymd, activeRegion],
 
     queryFn: async () => {
       try {
