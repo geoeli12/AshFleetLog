@@ -473,7 +473,16 @@ export default function CustomersPA() {
   });
 
   const rows = useMemo(() => {
-    const list = Array.isArray(customers) ? customers : [];
+    const list = (Array.isArray(customers) ? customers : []).map(c => ({
+      ...c,
+      receivingHours: c.receiving_hours ?? c.receivingHours,
+      receivingNotes: c.receiving_notes ?? c.receivingNotes,
+      weekendHours: c.weekend_hours ?? c.weekendHours,
+      contactPhone: c.contact_phone ?? c.contactPhone,
+      contactEmail: c.contact_email ?? c.contactEmail,
+      dropTrailers: c.drop_trailers ?? c.dropTrailers,
+    }));
+
     const qq = norm(q);
 
     const filtered = !qq
@@ -538,18 +547,17 @@ export default function CustomersPA() {
 
   const saveRow = (draft) => {
     const cleaned = {
-      ...(draft || {}),
       customer: displayCustomerName(draft?.customer),
       address: String(draft?.address ?? "").trim(),
-      receivingHours: String(draft?.receivingHours ?? "").trim(),
-      receivingNotes: String(draft?.receivingNotes ?? "").trim(),
-      weekendHours: String(draft?.weekendHours ?? "").trim(),
+      receiving_hours: String(draft?.receivingHours ?? "").trim(),
+      receiving_notes: String(draft?.receivingNotes ?? "").trim(),
+      weekend_hours: String(draft?.weekendHours ?? "").trim(),
       distance: String(draft?.distance ?? "").trim(),
       contact: String(draft?.contact ?? "").trim(),
-      contactPhone: String(draft?.contactPhone ?? "").trim(),
-      contactEmail: String(draft?.contactEmail ?? "").trim(),
+      contact_phone: String(draft?.contactPhone ?? "").trim(),
+      contact_email: String(draft?.contactEmail ?? "").trim(),
       notes: String(draft?.notes ?? "").trim(),
-      dropTrailers: String(draft?.dropTrailers ?? "").trim(),
+      drop_trailers: String(draft?.dropTrailers ?? "").trim(),
       coordinates: String(draft?.coordinates ?? "").trim(),
       dis: String(draft?.dis ?? "").trim(),
       eta: String(draft?.eta ?? "").trim(),
@@ -558,15 +566,18 @@ export default function CustomersPA() {
     if (!cleaned.customer) return;
 
     if (editMode === "new") {
-      if (cleaned.id === null || cleaned.id === undefined || cleaned.id === "") {
-        cleaned.id = getNextId(customers);
+      if (!draft.id) {
+        cleaned.id = Number(getNextId(customers));
+      } else {
+        cleaned.id = Number(draft.id);
       }
+
       createMutation.mutate(cleaned);
       return;
     }
 
-    const id = activeRow?.id;
-    if (id === undefined || id === null || id === "") return;
+    const id = Number(activeRow?.id);
+    if (id === undefined || id === null || isNaN(id)) return;
 
     updateMutation.mutate({ id, data: cleaned });
   };
@@ -591,7 +602,17 @@ export default function CustomersPA() {
         open={editOpen}
         onOpenChange={setEditOpen}
         title={editMode === "new" ? "Add new customer (PA)" : "Edit customer (PA)"}
-        initial={activeRow || {}}
+
+        initial={{
+          ...(activeRow || {}),
+          receivingHours: activeRow?.receiving_hours ?? activeRow?.receivingHours,
+          receivingNotes: activeRow?.receiving_notes ?? activeRow?.receivingNotes,
+          weekendHours: activeRow?.weekend_hours ?? activeRow?.weekendHours,
+          contactPhone: activeRow?.contact_phone ?? activeRow?.contactPhone,
+          contactEmail: activeRow?.contact_email ?? activeRow?.contactEmail,
+          dropTrailers: activeRow?.drop_trailers ?? activeRow?.dropTrailers,
+        }}
+
         onSave={saveRow}
         isSaving={createMutation.isPending || updateMutation.isPending}
       />
