@@ -71,6 +71,14 @@ const [customerFocused, setCustomerFocused] = useState(false);
 
   const [rows, setRows] = useState(() => Array.from({ length: 10 }, blankRow));
 
+  const [editablePrices, setEditablePrices] = useState({
+    p48x40_1: 0,
+    p48x40_2: 0,
+    pLargeOdd: 0,
+    pSmallOdd: 0,
+    pBaledOcc: 0,
+  });
+
   const printStyleId = "invoice-print-style";
 
   useEffect(() => {
@@ -244,13 +252,45 @@ const [customerFocused, setCustomerFocused] = useState(false);
     };
   };
 
+  useEffect(() => {
+
+    const prices = getUnitPrices();
+
+    setEditablePrices({
+      p48x40_1: prices.p48x40_1,
+      p48x40_2: prices.p48x40_2,
+      pLargeOdd: prices.pLargeOdd,
+      pSmallOdd: prices.pSmallOdd,
+      pBaledOcc: prices.pBaledOcc,
+    });
+
+  }, [selectedCustomer]);
+
+  const updateCustomerPrice = async (field, value) => {
+
+    if (!selectedCustomer?.id) return;
+
+    const num = Number(value || 0);
+
+    try {
+
+      await api.entities.CustomerIL.update(selectedCustomer.id, {
+        [field]: num,
+      });
+
+    } catch (err) {
+      console.error("Failed updating customer price", err);
+    }
+
+  };
+
   const calcRow = (r) => {
     const q1 = coerceInt(r.qty48x40_1);
     const q2 = coerceInt(r.qty48x40_2);
     const qLarge = coerceInt(r.largeOdd);
     const qSmall = coerceInt(r.smallOdd);
     const qOcc = coerceInt(r.baledOcc);
-    const { p48x40_1, p48x40_2, pLargeOdd, pSmallOdd, pBaledOcc } = getUnitPrices();
+    const { p48x40_1, p48x40_2, pLargeOdd, pSmallOdd, pBaledOcc } = editablePrices;
     const totalQty48 = q1 + q2;
     const total =
       q1 * p48x40_1 +
@@ -289,7 +329,7 @@ const [customerFocused, setCustomerFocused] = useState(false);
 
     return { t1, t2, t48, tLarge, tSmall, tOcc, grand };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, selectedCustomer]);
+  }, [rows, editablePrices]);
 
   const updateRow = (idx, field, value) => {
     setRows((prev) => {
@@ -450,7 +490,7 @@ const [customerFocused, setCustomerFocused] = useState(false);
 setCustomerFocused(false);
   };
 
-  const unitPrices = useMemo(() => getUnitPrices(), [selectedCustomer]);
+  const unitPrices = editablePrices;
 
   return (
     <div className="min-h-screen bg-amber-50 p-4 md:p-6">
@@ -578,23 +618,106 @@ setCustomerFocused(false);
 
                 <div className="no-print rounded-xl border border-black/10 bg-amber-50/60 p-3 text-xs">
                   <div className="font-semibold text-neutral-800">Pricing loaded from Customer Prices</div>
+
                   <div className="mt-1 grid grid-cols-2 sm:grid-cols-5 gap-2 text-neutral-700">
+
                     <div>
-                      48x40 #1: <span className="font-semibold">{money(unitPrices.p48x40_1)}</span>
+                      48x40 #1:
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={editablePrices.p48x40_1}
+                        className="ml-1 w-16 border rounded px-1 font-semibold bg-white"
+                        onChange={(e) =>
+                          setEditablePrices(prev => ({
+                            ...prev,
+                            p48x40_1: Number(e.target.value || 0),
+                          }))
+                        }
+                        onBlur={(e) =>
+                          updateCustomerPrice("price48x40_1", e.target.value)
+                        }
+                      />
                     </div>
+
                     <div>
-                      48x40 #2: <span className="font-semibold">{money(unitPrices.p48x40_2)}</span>
+                      48x40 #2:
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={editablePrices.p48x40_2}
+                        className="ml-1 w-16 border rounded px-1 font-semibold bg-white"
+                        onChange={(e) =>
+                          setEditablePrices(prev => ({
+                            ...prev,
+                            p48x40_2: Number(e.target.value || 0),
+                          }))
+                        }
+                        onBlur={(e) =>
+                          updateCustomerPrice("price48x40_2", e.target.value)
+                        }
+                      />
                     </div>
+
                     <div>
-                      Large Odd: <span className="font-semibold">{money(unitPrices.pLargeOdd)}</span>
+                      Large Odd:
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={editablePrices.pLargeOdd}
+                        className="ml-1 w-16 border rounded px-1 font-semibold bg-white"
+                        onChange={(e) =>
+                          setEditablePrices(prev => ({
+                            ...prev,
+                            pLargeOdd: Number(e.target.value || 0),
+                          }))
+                        }
+                        onBlur={(e) =>
+                          updateCustomerPrice("priceLargeOdd", e.target.value)
+                        }
+                      />
                     </div>
+
                     <div>
-                      Small Odd: <span className="font-semibold">{money(unitPrices.pSmallOdd)}</span>
+                      Small Odd:
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={editablePrices.pSmallOdd}
+                        className="ml-1 w-16 border rounded px-1 font-semibold bg-white"
+                        onChange={(e) =>
+                          setEditablePrices(prev => ({
+                            ...prev,
+                            pSmallOdd: Number(e.target.value || 0),
+                          }))
+                        }
+                        onBlur={(e) =>
+                          updateCustomerPrice("priceSmallOdd", e.target.value)
+                        }
+                      />
                     </div>
+
                     <div>
-                      Baled OCC: <span className="font-semibold">{money(unitPrices.pBaledOcc)}</span>
+                      Baled OCC:
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={editablePrices.pBaledOcc}
+                        className="ml-1 w-16 border rounded px-1 font-semibold bg-white"
+                        onChange={(e) =>
+                          setEditablePrices(prev => ({
+                            ...prev,
+                            pBaledOcc: Number(e.target.value || 0),
+                          }))
+                        }
+                        onBlur={(e) =>
+                          updateCustomerPrice("priceBailedCardboard", e.target.value)
+                        }
+                      />
                     </div>
+
                   </div>
+
                   {!selectedCustomer ? (
                     <div className="mt-2 text-neutral-600">Pick a customer to auto-calc totals.</div>
                   ) : null}
