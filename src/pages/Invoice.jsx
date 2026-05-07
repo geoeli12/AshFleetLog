@@ -58,7 +58,7 @@ function safeNum(v) {
 export default function Invoice() {
   const [invoiceMonth, setInvoiceMonth] = useState(() => {
     const now = new Date();
-    return `${now.toLocaleString("en-US", { month: "long" })} ${now.getFullYear()}`;
+    return now.toLocaleString("en-US", { month: "long" });
   });
   const [dtValue, setDtValue] = useState("0");
 
@@ -136,6 +136,92 @@ const [customerFocused, setCustomerFocused] = useState(false);
       null
     );
   }, [customerName, customers]);
+
+  const selectedMonthNumber = useMemo(() => {
+    const months = {
+      January: "01",
+      February: "02",
+      March: "03",
+      April: "04",
+      May: "05",
+      June: "06",
+      July: "07",
+      August: "08",
+      September: "09",
+      October: "10",
+      November: "11",
+      December: "12",
+    };
+
+    return months[invoiceMonth] || "";
+  }, [invoiceMonth]);
+
+  const { data: rawInventoryEntries } = useQuery({
+    queryKey: ["invoiceInventory", customerName, selectedMonthNumber],
+
+    enabled: !!customerName && !!selectedMonthNumber,
+
+    queryFn: async () => {
+      try {
+
+        const res = await api.entities.InventoryEntry.filter({
+          customer_name: customerName,
+        }, "-date");
+
+        return unwrapListResult(res);
+
+      } catch (err) {
+        console.error(err);
+        return [];
+      }
+    },
+  });
+
+  const inventoryEntries = useMemo(() => {
+
+    const arr = unwrapListResult(rawInventoryEntries);
+
+    return arr.filter((entry) => {
+
+      if (!entry?.date) return false;
+
+      const d = String(entry.date);
+
+      return d.slice(5, 7) === selectedMonthNumber;
+
+    });
+
+  }, [rawInventoryEntries, selectedMonthNumber]);
+
+  useEffect(() => {
+
+    if (!inventoryEntries.length) {
+      setRows(Array.from({ length: 10 }, blankRow));
+      return;
+    }
+
+    const mapped = inventoryEntries.map((entry) => ({
+
+      date: entry.date || "",
+      ashRef: entry.ash_pallet_ref || "",
+      trailer: entry.trailer_number || "",
+      custRef: entry.customer_ref || "",
+
+      qty48x40_1: entry.pallet_48x40_1 || "",
+      qty48x40_2: entry.pallet_48x40_2 || "",
+
+      largeOdd: entry.large_odd || "",
+      smallOdd: entry.small_odd || "",
+
+      baledOcc: entry.bailed_cardboard || "",
+
+    }));
+
+    mapped.push(blankRow());
+
+    setRows(mapped);
+
+  }, [inventoryEntries]);
 
   const getUnitPrices = () => {
     const c = selectedCustomer || {};
