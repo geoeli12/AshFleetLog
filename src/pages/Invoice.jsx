@@ -207,8 +207,11 @@ const [customerFocused, setCustomerFocused] = useState(false);
       trailer: entry.trailer_number || "",
       custRef: entry.customer_ref || "",
 
-      qty48x40_1: entry.pallet_48x40_1 || "",
-      qty48x40_2: entry.pallet_48x40_2 || "",
+      qty48x40_1_raw: entry.pallet_48x40_1 || "",
+      qty48x40_2_raw: entry.pallet_48x40_2 || "",
+
+      qty48x40_1: "",
+      qty48x40_2: "",
 
       largeOdd: entry.large_odd || "",
       smallOdd: entry.small_odd || "",
@@ -216,6 +219,13 @@ const [customerFocused, setCustomerFocused] = useState(false);
       baledOcc: entry.bailed_cardboard || "",
 
     }));
+
+    mapped.forEach((row) => {
+
+      row.qty48x40_1 = deduct20(row.qty48x40_1_raw);
+      row.qty48x40_2 = deduct20(row.qty48x40_2_raw);
+
+    });
 
     mapped.push(blankRow());
 
@@ -676,7 +686,20 @@ setCustomerFocused(false);
                           />
                         </td>
 
-                        <td className="border border-black/40 p-0.5 text-center">
+                        <td className="relative border border-black/40 p-0.5 text-center">
+
+                          {r.qty48x40_1_raw && (
+                            <div
+                              className="absolute top-0 right-0 w-0 h-0"
+                              style={{
+                                borderTop: "10px solid red",
+                                borderLeft: "10px solid transparent",
+                                pointerEvents: "none",
+                              }}
+                              title={`Original: ${r.qty48x40_1_raw}`}
+                            />
+                          )}
+
                           <input
                             className="w-full bg-transparent outline-none text-center"
                             value={r.qty48x40_1}
@@ -691,7 +714,21 @@ setCustomerFocused(false);
                             onChange={(e) => updateRow(idx, "qty48x40_1", e.target.value)}
                           />
                         </td>
-                        <td className="border border-black/40 p-0.5 text-center">
+
+                        <td className="relative border border-black/40 p-0.5 text-center">
+
+                          {r.qty48x40_2_raw && (
+                            <div
+                              className="absolute top-0 right-0 w-0 h-0"
+                              style={{
+                                borderTop: "10px solid red",
+                                borderLeft: "10px solid transparent",
+                                pointerEvents: "none",
+                              }}
+                              title={`Original: ${r.qty48x40_2_raw}`}
+                            />
+                          )}
+
                           <input
                             className="w-full bg-transparent outline-none text-center"
                             value={r.qty48x40_2}
